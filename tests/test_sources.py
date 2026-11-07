@@ -5,7 +5,7 @@ from pathlib import Path
 from app.geo import bbox, haversine_km
 from app.sources import gtfs_vehicles, knmi, ndw, ns, opensky, p2000, satellites
 
-FX = Path(__file__).parent / "fixtures"
+FX = Path(__file__).parent.parent / "app" / "demo" / "data"
 HEERENVEEN = (52.9594, 5.9189)
 BOX = bbox(*HEERENVEEN, 60)
 

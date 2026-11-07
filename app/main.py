@@ -21,12 +21,20 @@ STATIC = Path(__file__).parent / "static"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    active, transport = settings, None
+    if settings.demo:
+        from app import demo
+
+        active, transport = demo.enable(settings)
+        logging.getLogger(__name__).warning("DEMO MODE: serving built-in sample data, no live feeds")
+    app.state.demo = settings.demo
     app.state.client = httpx.AsyncClient(
         timeout=httpx.Timeout(20.0, connect=10.0),
         headers={"User-Agent": settings.user_agent},
         follow_redirects=True,
+        transport=transport,
     )
-    app.state.sources = source_registry.build(settings)
+    app.state.sources = source_registry.build(active)
     yield
     await app.state.client.aclose()
 
@@ -77,6 +85,7 @@ def _source(name: str):
 @app.get("/api/config")
 async def config():
     return {
+        "demo": getattr(app.state, "demo", False),
         "center": {"lat": settings.center_lat, "lon": settings.center_lon},
         "region_radius_km": settings.region_radius_km,
         "max_query_radius_km": settings.max_query_radius_km,

@@ -3,13 +3,18 @@ import { colorFor, fmtTime } from "../constants.js";
 
 export default function Sidebar({
   point, radius, maxRadius, onRadius, onLocate,
-  layers, enabled, data, onToggle, nearby, onSelect, attribution,
+  layers, enabled, data, onToggle, nearby, onSelect, attribution, demo,
 }) {
   return (
     <aside className="panel">
       <header>
         <h1><span className="dot" />Neighbourhood Radar</h1>
         <p className="muted sub">Klik op de kaart om een punt te kiezen.</p>
+        {demo && (
+          <p className="demo-banner" role="status">
+            Demo: voorbeeldgegevens, geen echte meldingen.
+          </p>
+        )}
       </header>
 
       <section className="where">

@@ -18,6 +18,9 @@ on:
     paths-ignore:
       - "**.md"
       - ".env.example"
+      - "docs/**"
+      - "scripts/**"
+      - ".github/workflows/screenshots.yaml"
   workflow_dispatch:
     inputs:
       bump:

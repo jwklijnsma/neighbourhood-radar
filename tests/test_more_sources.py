@@ -4,7 +4,7 @@ import pytest
 
 from app.geo import bbox
 from app.sources import charging, drips, osm, water
-from tests import builders_more as B
+from app.demo import builders_more as B
 
 BOX = bbox(52.9594, 5.9189, 60)
 

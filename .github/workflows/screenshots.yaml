@@ -1,0 +1,68 @@
+name: screenshots
+
+# Runs the app in demo mode (built-in sample data, no live feeds), takes README
+# screenshots with real map tiles, and commits them to docs/screenshots.
+# Runs after every successful release, and on demand from the Actions tab.
+
+on:
+  workflow_run:
+    workflows: [release]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: screenshots
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build frontend
+        run: npm ci && npm run build
+        working-directory: frontend
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install app and Playwright
+        run: |
+          pip install -r requirements.txt playwright
+          playwright install --with-deps chromium
+      - name: Start the app in demo mode
+        env:
+          OL_DEMO: "1"
+        run: |
+          nohup uvicorn app.main:app --port 8080 > uvicorn.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://localhost:8080/healthz && break; sleep 1; done
+          curl -fsS http://localhost:8080/api/config | grep -q '"demo":true'
+      - name: Take screenshots
+        run: python scripts/screenshots.py http://localhost:8080 docs/screenshots
+      - name: Show server log on failure
+        if: failure()
+        run: cat uvicorn.log
+      - name: Commit screenshots if they changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged"
+            exit 0
+          fi
+          git commit -m "docs: update screenshots"
+          git pull --rebase origin main
+          git push origin HEAD:main

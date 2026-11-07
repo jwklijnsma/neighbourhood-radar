@@ -105,6 +105,7 @@ function Live({ cfg }) {
         nearby={nearby}
         onSelect={setSelected}
         attribution={attribution}
+        demo={!!cfg.demo}
       />
       <MapView
         point={point}

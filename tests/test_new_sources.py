@@ -13,9 +13,9 @@ from app.geo import bbox
 from app.sources import air, ndw, transit_alerts, weather, webcams
 from app.sources.datex import iter_records
 from app.sources.remotezip import RangeNotSupported, read_member
-from tests import builders
+from app.demo import builders
 
-FX = Path(__file__).parent / "fixtures"
+FX = Path(__file__).parent.parent / "app" / "demo" / "data"
 BOX = bbox(52.9594, 5.9189, 60)
 NOW = datetime(2026, 11, 7, 12, 0, tzinfo=timezone.utc)
 

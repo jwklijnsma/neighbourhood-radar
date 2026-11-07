@@ -6,7 +6,7 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-FX = Path(__file__).parent / "fixtures"
+FX = Path(__file__).parent.parent / "app" / "demo" / "data"
 os.environ.setdefault("OL_NS_API_KEY", "test-key")
 os.environ.setdefault("OL_WINDY_API_KEY", "windy-test-key")
 
@@ -14,8 +14,8 @@ from app import main  # noqa: E402
 from app import sources as registry  # noqa: E402
 from app.config import Settings  # noqa: E402
 from app.sources import air, transit_alerts  # noqa: E402
-from tests import builders  # noqa: E402
-from tests import builders_more  # noqa: E402
+from app.demo import builders  # noqa: E402
+from app.demo import builders_more  # noqa: E402
 
 CALLS: list[str] = []
 
@@ -201,3 +201,31 @@ def test_index_without_build_explains(client, monkeypatch, tmp_path):
     monkeypatch.setattr(main, "STATIC", tmp_path)
     r = client.get("/")
     assert r.status_code == 503 and "npm run build" in r.text
+
+
+def test_demo_mode_serves_every_layer_without_network(monkeypatch):
+    """OL_DEMO=1: all layers have sample data and nothing leaves the process."""
+    import dataclasses
+
+    from app import demo
+
+    # demo.enable() patches these process-wide; restore them after this test
+    monkeypatch.setattr(air, "MIN_INTERVAL", air.MIN_INTERVAL)
+    monkeypatch.setattr(transit_alerts.TransitAlertSource, "_load_stops",
+                        transit_alerts.TransitAlertSource._load_stops)
+    s = dataclasses.replace(Settings(), demo=True)
+    monkeypatch.setattr(main, "settings", s)
+    with TestClient(main.app) as c:
+        cfg = c.get("/api/config").json()
+        assert cfg["demo"] is True
+        empty = []
+        for layer in [l["name"] for l in cfg["layers"]]:
+            if layer == "satellites":
+                continue  # depends on whether the ISS happens to be overhead
+            try:
+                _eventually(c, layer)
+            except AssertionError:
+                empty.append(layer)
+        assert empty == []
+    assert isinstance(main.app.state.client._transport, httpx.MockTransport)
+    assert demo.make_handler(52.96, 5.92)(httpx.Request("GET", "https://example.org/")).status_code == 404

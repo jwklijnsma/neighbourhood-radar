@@ -112,3 +112,7 @@ footer { font-size: 11px; }
 }
 .leaflet-popup-content .muted { color: #6b6a66; }
 .popup-img.drip { background: #111; padding: 6px; image-rendering: pixelated; }
+.demo-banner {
+  margin: 10px 0 0; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  background: #fff3bf; color: #5c3c00; border: 1px solid #ffd43b;
+}
