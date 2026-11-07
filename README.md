@@ -78,11 +78,17 @@ cd frontend && npm run dev                 # http://localhost:5173/static/
 
 ### Kubernetes / OpenShift
 
+From the published chart (OCI on GHCR, versions match the releases):
+
 ```bash
-helm upgrade --install neighbourhood-radar deploy/helm/neighbourhood-radar \
+helm upgrade --install neighbourhood-radar \
+  oci://ghcr.io/jwklijnsma/charts/neighbourhood-radar --version <x.y.z> \
   --set route.enabled=true \
   --set secrets.OL_NS_API_KEY=xxxxx
 ```
+
+Or from a checkout: `helm upgrade --install neighbourhood-radar deploy/helm/neighbourhood-radar ...`
+(that uses the chart's default image tag).
 
 The image runs as an arbitrary UID with group 0 and a read-only root filesystem,
 so it fits `restricted-v2` without an SCC exception. Use `secrets.existingSecret`
@@ -105,6 +111,34 @@ pytest -q
 
 Every parser is tested against recorded-format fixtures and the API is tested
 with all upstreams mocked, so tests run offline.
+
+## CI and releases
+
+* **`ci.yaml`** runs on pull requests and non-main branches: frontend build,
+  pytest, `helm lint`, and a Docker build with a smoke test (nothing is pushed).
+* **`release.yaml`** runs on every push to `main` (docs-only pushes excepted):
+  it runs CI, picks the next version, builds a `linux/amd64` + `linux/arm64`
+  image with SBOM and provenance, pushes the Helm chart to
+  `oci://ghcr.io/jwklijnsma/charts`, and creates the tag and GitHub Release with
+  generated notes and the chart `.tgz` attached.
+
+Image tags: `x.y.z`, `x.y`, `latest`, `sha-<commit>`.
+
+The version comes from commit messages since the last `v*` tag
+([Conventional Commits](https://www.conventionalcommits.org/)):
+
+| Commit message | Bump |
+|---|---|
+| `feat: ...` or `feat(scope): ...` | minor |
+| `type!: ...` or `BREAKING CHANGE` in the body | major |
+| anything else | patch |
+
+To force a bump, run the release workflow by hand (Actions → release → Run
+workflow) and pick patch, minor or major.
+
+New GHCR packages start private. Make `neighbourhood-radar` and
+`charts/neighbourhood-radar` public in the package settings, or give the
+cluster a pull secret.
 
 ## Caveats
 
