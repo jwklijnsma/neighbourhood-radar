@@ -10,7 +10,7 @@ RUN npm run build
 
 # --- 2. runtime: Python backend serving API + built frontend ----------------
 # Runs as an arbitrary non-root UID with group 0, so it works on OpenShift's restricted SCC as-is.
-FROM python:3.12-slim
+FROM python:3.15-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
