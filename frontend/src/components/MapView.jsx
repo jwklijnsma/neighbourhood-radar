@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import L from "leaflet";
 import {
@@ -70,8 +71,9 @@ function FlyToSelected({ selected }) {
     // Same React component as marker popups, rendered into a detached node.
     const node = document.createElement("div");
     const root = createRoot(node);
-    root.render(<PopupBody p={selected.properties} />);
-    const popup = L.popup({ maxWidth: 340 }).setLatLng([lat, lon]).setContent(node).openOn(map);
+    // Render before Leaflet measures the popup, or it sizes itself to an empty node.
+    flushSync(() => root.render(<PopupBody p={selected.properties} />));
+    const popup = L.popup({ maxWidth: 340, minWidth: 220 }).setLatLng([lat, lon]).setContent(node).openOn(map);
     popup.on("remove", () => setTimeout(() => root.unmount()));
   }, [map, selected]);
   return null;
@@ -184,7 +186,7 @@ function FeatureMarker({ f }) {
   const color = featureColor(p);
   const icon = useMemo(() => iconFor(p, color), [p, color]);
   const popup = (
-    <Popup maxWidth={340}>
+    <Popup maxWidth={340} minWidth={220}>
       <PopupBody p={p} />
     </Popup>
   );
