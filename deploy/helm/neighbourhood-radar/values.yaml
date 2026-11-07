@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/jwklijnsma/omgeving-live
+  repository: ghcr.io/jwklijnsma/neighbourhood-radar
   tag: ""            # defaults to .Chart.AppVersion
   pullPolicy: IfNotPresent
 
@@ -33,7 +33,7 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
-  host: omgeving-live.example.org
+  host: neighbourhood-radar.example.org
   tls: []
 
 # OpenShift Route (use instead of ingress on OpenShift)

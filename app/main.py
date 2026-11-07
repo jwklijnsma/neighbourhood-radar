@@ -1,4 +1,4 @@
-"""omgeving-live: one map with live open data around a point."""
+"""neighbourhood-radar: one map with live open data around a point."""
 from __future__ import annotations
 
 import asyncio
@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     await app.state.client.aclose()
 
 
-app = FastAPI(title="omgeving-live", lifespan=lifespan, docs_url="/api/docs", redoc_url=None)
+app = FastAPI(title="neighbourhood-radar", lifespan=lifespan, docs_url="/api/docs", redoc_url=None)
 
 
 @app.middleware("http")

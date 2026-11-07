@@ -1,5 +1,5 @@
 // Per-browser conveniences only (last point, radius, which layers are on).
-const KEY = "omgeving-live:v1";
+const KEY = "neighbourhood-radar:v1";
 
 export function loadPrefs() {
   try {

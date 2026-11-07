@@ -60,7 +60,7 @@ class Settings:
     # KNMI earthquakes.
     knmi_days: float = field(default_factory=lambda: _float("KNMI_DAYS", 30.0))
 
-    user_agent: str = field(default_factory=lambda: _env("USER_AGENT", "omgeving-live/1.0"))
+    user_agent: str = field(default_factory=lambda: _env("USER_AGENT", "neighbourhood-radar/1.0"))
 
     def enabled(self, name: str) -> bool:
         return name not in self.disabled_sources

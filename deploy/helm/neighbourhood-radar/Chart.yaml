@@ -1,5 +1,5 @@
 apiVersion: v2
-name: omgeving-live
+name: neighbourhood-radar
 description: Live map of open data (P2000, NDW traffic, public transport, NS, aircraft, satellites, KNMI quakes) around a point
 type: application
 version: 0.1.0

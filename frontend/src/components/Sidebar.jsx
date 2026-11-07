@@ -8,7 +8,7 @@ export default function Sidebar({
   return (
     <aside className="panel">
       <header>
-        <h1><span className="dot" />Omgeving Live</h1>
+        <h1><span className="dot" />Neighbourhood Radar</h1>
         <p className="muted sub">Klik op de kaart om een punt te kiezen.</p>
       </header>
 

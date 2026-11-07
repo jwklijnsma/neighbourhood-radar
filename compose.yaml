@@ -1,7 +1,7 @@
 services:
-  omgeving-live:
+  neighbourhood-radar:
     build: .
-    image: ghcr.io/jwklijnsma/omgeving-live:latest
+    image: ghcr.io/jwklijnsma/neighbourhood-radar:latest
     ports:
       - "8080:8080"
     env_file:

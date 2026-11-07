@@ -1,4 +1,4 @@
-# omgeving-live
+# Neighbourhood Radar
 
 One map with live open data around a point you choose: 112/P2000 alerts, road
 incidents, buses and trains on the move, NS disruptions, aircraft overhead,
@@ -79,7 +79,7 @@ cd frontend && npm run dev                 # http://localhost:5173/static/
 ### Kubernetes / OpenShift
 
 ```bash
-helm upgrade --install omgeving-live deploy/helm/omgeving-live \
+helm upgrade --install neighbourhood-radar deploy/helm/neighbourhood-radar \
   --set route.enabled=true \
   --set secrets.OL_NS_API_KEY=xxxxx
 ```
