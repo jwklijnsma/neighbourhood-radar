@@ -3,3 +3,6 @@ __pycache__/
 .pytest_cache/
 .env
 .venv/
+frontend/node_modules/
+# React build output (built in CI and in the Docker image)
+app/static/

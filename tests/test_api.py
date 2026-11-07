@@ -86,9 +86,28 @@ def test_radius_cap_and_unknown_layer(client):
     assert client.get("/api/layers/nope").status_code == 404
 
 
-def test_index_and_security_headers(client):
-    r = client.get("/")
-    assert r.status_code == 200 and "Omgeving Live" in r.text
+def test_security_headers(client):
+    r = client.get("/api/config")
     assert "frame-ancestors 'none'" in r.headers["content-security-policy"]
-    assert client.get("/static/app.js").status_code == 200
-    assert client.get("/static/vendor/leaflet/leaflet.js").status_code == 200
+    assert r.headers["x-content-type-options"] == "nosniff"
+
+
+BUILT = (Path(main.__file__).parent / "static" / "index.html").exists()
+
+
+@pytest.mark.skipif(not BUILT, reason="frontend not built (cd frontend && npm run build)")
+def test_index_serves_react_build_and_assets(client):
+    r = client.get("/")
+    assert r.status_code == 200 and '<div id="root">' in r.text
+    import re
+
+    assets = re.findall(r'(?:src|href)="(/static/assets/[^"]+)"', r.text)
+    assert assets, "built page should reference hashed assets"
+    for a in assets:
+        assert client.get(a).status_code == 200
+
+
+def test_index_without_build_explains(client, monkeypatch, tmp_path):
+    monkeypatch.setattr(main, "STATIC", tmp_path)
+    r = client.get("/")
+    assert r.status_code == 503 and "npm run build" in r.text

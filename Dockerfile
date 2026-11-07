@@ -1,5 +1,15 @@
+# --- 1. build the React frontend ------------------------------------------
+FROM node:22-alpine AS frontend
+WORKDIR /src/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend/ ./
+# vite.config.js writes to ../app/static
+RUN npm run build
+
+# --- 2. runtime: Python backend serving API + built frontend ----------------
 # Runs as an arbitrary non-root UID with group 0, so it works on OpenShift's restricted SCC as-is.
-FROM python:3.12-slim AS base
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -11,6 +21,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY app ./app
+COPY --from=frontend /src/app/static ./app/static
 RUN chgrp -R 0 /opt/app && chmod -R g=u /opt/app
 
 USER 1001

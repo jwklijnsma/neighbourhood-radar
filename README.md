@@ -29,7 +29,7 @@ publish an open camera feed.
 ## How it works
 
 ```
-browser (Leaflet) ──/api/layers/{name}?lat&lon&radius_km──▶ FastAPI
+browser (React) ────/api/layers/{name}?lat&lon&radius_km──▶ FastAPI
                                                               │  per-source TTL cache
                                                               ▼  (one fetch serves all viewers)
                        P2000 · NDW · OVapi · NS · OpenSky · CelesTrak · KNMI
@@ -42,8 +42,10 @@ browser (Leaflet) ──/api/layers/{name}?lat&lon&radius_km──▶ FastAPI
   `status.last_error`; the UI marks the layer "Bron niet bereikbaar".
 * OpenSky's anonymous budget is 400 credits/day; one region box costs 1 credit,
   so the 240 s TTL stays under it even with the page open 24/7.
-* All feed text is rendered with `textContent`; strict CSP, no third-party
-  scripts (Leaflet is vendored in `app/static/vendor`). Map tiles come from CARTO.
+* The UI is React + react-leaflet (Vite), in `frontend/`. It builds into
+  `app/static`, which FastAPI serves, so production is still one container.
+* Feed text is only rendered as React text (escaped); strict CSP, no
+  third-party scripts. Map tiles come from CARTO.
 
 ## API
 
@@ -63,7 +65,15 @@ Without Docker:
 
 ```bash
 pip install -r requirements.txt
+(cd frontend && npm ci && npm run build)   # builds into app/static
 uvicorn app.main:app --port 8080
+```
+
+Frontend development with hot reload (proxies `/api` to the backend on :8080):
+
+```bash
+uvicorn app.main:app --port 8080 --reload &
+cd frontend && npm run dev                 # http://localhost:5173/static/
 ```
 
 ### Kubernetes / OpenShift
@@ -89,6 +99,7 @@ To move the map elsewhere, change `OL_CENTER_LAT/LON` and `OL_P2000_REGIOS`
 
 ```bash
 pip install -r requirements-dev.txt
+(cd frontend && npm ci && npm run build)   # optional; the UI test is skipped without it
 pytest -q
 ```
 

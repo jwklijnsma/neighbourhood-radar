@@ -8,7 +8,7 @@ from pathlib import Path
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import sources as source_registry
@@ -137,7 +137,15 @@ async def readyz():
 
 @app.get("/")
 async def index():
-    return FileResponse(STATIC / "index.html")
+    page = STATIC / "index.html"
+    if not page.exists():
+        return PlainTextResponse(
+            "Frontend not built. Run: cd frontend && npm ci && npm run build", status_code=503
+        )
+    # Hashed assets can be cached forever; the page itself must not be.
+    return FileResponse(page, headers={"Cache-Control": "no-cache"})
 
 
-app.mount("/static", StaticFiles(directory=STATIC), name="static")
+# The React build (frontend/ -> app/static). check_dir=False so the API still
+# starts when only the backend is installed.
+app.mount("/static", StaticFiles(directory=STATIC, check_dir=False), name="static")
