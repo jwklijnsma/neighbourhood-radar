@@ -1,0 +1,13 @@
+services:
+  omgeving-live:
+    build: .
+    image: ghcr.io/jwklijnsma/omgeving-live:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - path: .env
+        required: false
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped

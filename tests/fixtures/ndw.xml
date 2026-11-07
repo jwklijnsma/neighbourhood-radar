@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d2:payload xmlns:d2="http://datex2.eu/schema/3/messageContainer" xmlns:sit="http://datex2.eu/schema/3/situation" xmlns:com="http://datex2.eu/schema/3/common" xmlns:loc="http://datex2.eu/schema/3/locationReferencing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="sit:SituationPublication">
+ <sit:situation id="RWS03_1">
+  <sit:situationRecord id="RWS03_1_1" version="1" xsi:type="sit:Accident">
+   <sit:validity><com:validityTimeSpecification><com:overallStartTime>2026-11-07T10:55:00Z</com:overallStartTime></com:validityTimeSpecification></sit:validity>
+   <sit:generalPublicComment><sit:comment><com:values><com:value lang="nl">Ongeval op de A7, rechterrijstrook dicht</com:value></com:values></sit:comment></sit:generalPublicComment>
+   <sit:locationReference xsi:type="loc:SingleRoadLinearLocation"><loc:supplementaryPositionalDescription><loc:roadInformation><loc:roadNumber>A7</loc:roadNumber></loc:roadInformation></loc:supplementaryPositionalDescription>
+    <loc:coordinatesForDisplay><loc:latitude>52.9701</loc:latitude><loc:longitude>5.9620</loc:longitude></loc:coordinatesForDisplay></sit:locationReference>
+  </sit:situationRecord>
+ </sit:situation>
+ <sit:situation id="RWS03_2">
+  <sit:situationRecord id="RWS03_2_1" version="1" xsi:type="sit:VehicleObstruction">
+   <sit:locationReference xsi:type="loc:PointLocation"><loc:coordinatesForDisplay><loc:latitude>51.9</loc:latitude><loc:longitude>4.4</loc:longitude></loc:coordinatesForDisplay></sit:locationReference>
+  </sit:situationRecord>
+ </sit:situation>
+</d2:payload>

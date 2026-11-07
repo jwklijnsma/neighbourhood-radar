@@ -1,0 +1,6 @@
+[{"id":"7000123","type":"DISRUPTION","title":"Heerenveen - Leeuwarden","isActive":true,"start":"2026-11-07T10:00:00+0100",
+  "timespans":[{"situation":{"label":"Geen treinen door een seinstoring"}}],
+  "publicationSections":[{"section":{"stations":[
+    {"uicCode":"8400311","stationCode":"HR","name":"Heerenveen","coordinate":{"lat":52.9614,"lng":5.9150},"countryCode":"NL"},
+    {"uicCode":"8400390","stationCode":"LW","name":"Leeuwarden","coordinate":{"lat":53.1961,"lng":5.7924},"countryCode":"NL"}]}}]},
+ {"id":"7000999","type":"MAINTENANCE","title":"Old","isActive":false,"publicationSections":[]}]

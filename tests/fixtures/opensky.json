@@ -1,0 +1,5 @@
+{"time": 1793000000, "states": [
+ ["4840d6", "KLM1234 ", "Kingdom of the Netherlands", 1793000000, 1793000000, 5.95, 52.98, 10972.8, false, 230.5, 45.0, 0.0, null, 11000.0, "1000", false, 0],
+ ["3c6444", "", "Germany", 1793000000, 1793000000, null, null, null, false, null, null, null, null, null, null, false, 0],
+ ["abc123", "PH-ABC", "Kingdom of the Netherlands", 1793000000, 1793000000, 5.80, 52.90, 300.0, true, 0.0, null, null, null, null, null, false, 0]
+]}

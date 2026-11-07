@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>P2000</title>
+<item><title>A1 Heerenveen</title><message>A1 Heerenveen Burgemeester Kuperusplein 8441 Rit 12345</message><published>Sat, 07 Nov 2026 11:40:12 +0100</published><pubDate>Sat, 07 Nov 2026 11:40:12 +0100</pubDate><regcode>02</regcode><regname>Fryslan</regname><dienst>Ambulancediensten</dienst><code>0223001</code><lat>52.9603</lat><lon>5.9214</lon></item>
+<item><title>A1 Heerenveen</title><message>A1 Heerenveen Burgemeester Kuperusplein 8441 Rit 12345</message><pubDate>Sat, 07 Nov 2026 11:40:12 +0100</pubDate><regcode>02</regcode><regname>Fryslan</regname><dienst>Ambulancediensten</dienst><code>0223999</code><lat>52.9603</lat><lon>5.9214</lon></item>
+<item><title>P 1 BRT-01 Brand woning Joure</title><message>P 1 BRT-01 Brand woning Midstraat Joure</message><pubDate>Sat, 07 Nov 2026 11:30:00 +0100</pubDate><regcode>02</regcode><regname>Fryslan</regname><dienst>Brandweerdiensten</dienst><code>0201001</code><lat>52.9670</lat><lon>5.7920</lon></item>
+<item><title>Amsterdam</title><message>P 2 Amsterdam</message><pubDate>Sat, 07 Nov 2026 11:30:00 +0100</pubDate><regcode>13</regcode><dienst>Politiediensten</dienst><code>1300001</code><lat>52.37</lat><lon>4.90</lon></item>
+<item><title>No location</title><message>Proefalarm</message><pubDate>Sat, 07 Nov 2026 11:00:00 +0100</pubDate><regcode>02</regcode><dienst>Brandweerdiensten</dienst><code>0201002</code><lat></lat><lon></lon></item>
+</channel></rss>

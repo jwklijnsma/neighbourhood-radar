@@ -1,0 +1,68 @@
+image:
+  repository: ghcr.io/jwklijnsma/omgeving-live
+  tag: ""            # defaults to .Chart.AppVersion
+  pullPolicy: IfNotPresent
+
+# Keep this at 1: the upstream cache lives in memory, and every extra replica
+# spends its own OpenSky credits and polls every feed again.
+replicaCount: 1
+
+config:
+  OL_CENTER_LAT: "52.9594"
+  OL_CENTER_LON: "5.9189"
+  OL_REGION_RADIUS_KM: "60"
+  OL_MAX_QUERY_RADIUS_KM: "100"
+  OL_P2000_REGIOS: "1,2,3"
+  OL_CELESTRAK_GROUPS: "stations,visual"
+  OL_SAT_MIN_ELEVATION_DEG: "10"
+  OL_DISABLED_SOURCES: ""
+
+# Optional API keys. Either fill these in (a Secret is rendered) or point
+# existingSecret at a Secret with the same keys (e.g. from Sealed Secrets / ESO).
+secrets:
+  existingSecret: ""
+  OL_NS_API_KEY: ""
+  OL_OPENSKY_CLIENT_ID: ""
+  OL_OPENSKY_CLIENT_SECRET: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: omgeving-live.example.org
+  tls: []
+
+# OpenShift Route (use instead of ingress on OpenShift)
+route:
+  enabled: false
+  host: ""
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    memory: 256Mi
+
+# No runAsUser on purpose: OpenShift's restricted-v2 SCC assigns one.
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
