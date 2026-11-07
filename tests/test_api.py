@@ -229,3 +229,12 @@ def test_demo_mode_serves_every_layer_without_network(monkeypatch):
         assert empty == []
     assert isinstance(main.app.state.client._transport, httpx.MockTransport)
     assert demo.make_handler(52.96, 5.92)(httpx.Request("GET", "https://example.org/")).status_code == 404
+
+
+def test_base_map_is_keyless_pdok_and_allowed_by_csp(client):
+    r = client.get("/api/config")
+    tiles = r.json()["tiles"]
+    assert tiles["url"].startswith("https://service.pdok.nl/brt/achtergrondkaart/")
+    assert "{z}/{x}/{y}" in tiles["url"]
+    assert "https://service.pdok.nl" in r.headers["content-security-policy"]
+    assert "cartocdn" not in r.headers["content-security-policy"]

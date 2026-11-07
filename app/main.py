@@ -42,6 +42,19 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="neighbourhood-radar", lifespan=lifespan, docs_url="/api/docs", redoc_url=None)
 
 
+def _tile_origin(url: str) -> str:
+    from urllib.parse import urlsplit
+
+    parts = urlsplit(url.replace("{s}", "a"))
+    host = parts.netloc
+    if "{s}" in url:  # subdomain placeholder: allow the wildcard
+        host = "*." + host.split(".", 1)[1]
+    return f"{parts.scheme}://{host}" if parts.scheme == "https" else ""
+
+
+TILE_ORIGIN = _tile_origin(settings.tile_url)
+
+
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     resp = await call_next(request)
@@ -51,7 +64,7 @@ async def security_headers(request: Request, call_next):
     resp.headers.setdefault(
         "Content-Security-Policy",
         "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: https://*.basemaps.cartocdn.com https://*.windy.com; "
+        f"img-src 'self' data: {TILE_ORIGIN} https://*.windy.com; "
         "connect-src 'self'; frame-ancestors 'none'",
     )
     return resp
@@ -86,6 +99,7 @@ def _source(name: str):
 async def config():
     return {
         "demo": getattr(app.state, "demo", False),
+        "tiles": {"url": settings.tile_url, "attribution": settings.tile_attribution},
         "center": {"lat": settings.center_lat, "lon": settings.center_lon},
         "region_radius_km": settings.region_radius_km,
         "max_query_radius_km": settings.max_query_radius_km,

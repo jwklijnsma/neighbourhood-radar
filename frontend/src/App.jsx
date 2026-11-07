@@ -116,6 +116,7 @@ function Live({ cfg }) {
         data={data}
         selected={selected}
         onPick={choosePoint}
+        tiles={cfg.tiles}
       />
     </div>
   );

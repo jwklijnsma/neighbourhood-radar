@@ -6,15 +6,11 @@ import {
 } from "react-leaflet";
 import { ACCENT, CATEGORY_LABEL, featureColor, fmtTime, safeImage, safeUrl } from "../constants.js";
 
-const dark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
-const TILE_URL = `https://{s}.basemaps.cartocdn.com/${dark ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png`;
-const TILE_ATTR =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>';
 
-export default function MapView({ point, radius, fitRadius, layers, enabled, data, selected, onPick }) {
+export default function MapView({ point, radius, fitRadius, layers, enabled, data, selected, onPick, tiles }) {
   return (
     <MapContainer className="map" center={[point.lat, point.lon]} zoom={11} preferCanvas>
-      <TileLayer url={TILE_URL} attribution={TILE_ATTR} subdomains="abcd" maxZoom={19} />
+      <TileLayer url={tiles.url} attribution={tiles.attribution} subdomains="abcd" maxZoom={19} />
       <ClickToPick onPick={onPick} />
       <FitToRadius point={point} radius={fitRadius} />
       <Circle

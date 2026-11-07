@@ -116,3 +116,10 @@ footer { font-size: 11px; }
   margin: 10px 0 0; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
   background: #fff3bf; color: #5c3c00; border: 1px solid #ffd43b;
 }
+
+/* The base map has no dark variant: invert it, keeping water blue-ish. Markers are
+   in other panes and keep their colours. */
+@media (prefers-color-scheme: dark) {
+  .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9); }
+  .leaflet-container { background: #1c1c1a; }
+}

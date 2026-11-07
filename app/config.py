@@ -78,6 +78,14 @@ class Settings:
     # KNMI earthquakes.
     knmi_days: float = field(default_factory=lambda: _float("KNMI_DAYS", 30.0))
 
+    # Base map tiles (XYZ template). Default: PDOK BRT achtergrondkaart, the Dutch
+    # government's free, keyless base map. Outside NL, point this at another provider
+    # and add its host to the page's Content-Security-Policy via the same setting.
+    tile_url: str = field(default_factory=lambda: _env(
+        "TILE_URL", "https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/grijs/EPSG:3857/{z}/{x}/{y}.png"))
+    tile_attribution: str = field(default_factory=lambda: _env(
+        "TILE_ATTRIBUTION", "Kaart © Kadaster (PDOK, CC BY 4.0)"))
+
     # Demo mode: answer every upstream request from built-in sample data.
     demo: bool = field(default_factory=lambda: _env("DEMO", "").lower() in ("1", "true", "yes"))
 

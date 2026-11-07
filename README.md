@@ -96,7 +96,8 @@ browser (React) ────/api/layers/{name}?lat&lon&radius_km──▶ FastAP
 * The UI is React + react-leaflet (Vite), in `frontend/`. It builds into
   `app/static`, which FastAPI serves, so production is still one container.
 * Feed text is only rendered as React text (escaped); strict CSP, no
-  third-party scripts. Map tiles come from CARTO.
+  third-party scripts. The base map is PDOK's BRT achtergrondkaart (Kadaster),
+  free and keyless; set `OL_TILE_URL` and `OL_TILE_ATTRIBUTION` for another provider.
 
 ## API
 
