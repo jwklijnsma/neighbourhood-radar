@@ -1,0 +1,8 @@
+{"total": 2, "webcams": [
+  {"webcamId": 1170000001, "title": "Heerenveen: Thialf", "lastUpdatedOn": "2026-11-07T11:20:00.000Z",
+   "location": {"city": "Heerenveen", "region": "Friesland", "latitude": 52.9447, "longitude": 5.9450},
+   "images": {"current": {"icon": "https://imgproxy.windy.com/_/icon/x.jpg", "preview": "https://imgproxy.windy.com/_/preview/x.jpg"}},
+   "urls": {"detail": "https://www.windy.com/webcams/1170000001"}},
+  {"webcamId": 1170000002, "title": "Bad image", "location": {"latitude": 52.95, "longitude": 5.93},
+   "images": {"current": {"preview": "javascript:alert(1)"}}, "urls": {"detail": "http://insecure.example"}}
+]}

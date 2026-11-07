@@ -1,0 +1,8 @@
+{"actual": {"stationmeasurements": [
+  {"stationid": 6270, "stationname": "Meetstation Leeuwarden", "lat": 53.22, "lon": 5.76, "regio": "Leeuwarden",
+   "timestamp": "2026-11-07T12:30:00", "weatherdescription": "Zwaar bewolkt", "winddirection": "ZW",
+   "temperature": 9.4, "feeltemperature": 6.1, "windspeedBft": 4, "winddirectiondegrees": 225,
+   "humidity": 87, "rainFallLastHour": 0.2, "airpressure": 1012.3},
+  {"stationid": 6240, "stationname": "Meetstation Schiphol", "lat": 52.30, "lon": 4.77, "temperature": 11.0},
+  {"stationid": 6999, "stationname": "Meetstation Kapot", "lat": null, "lon": null}
+]}}

@@ -36,15 +36,26 @@ class Settings:
     # Veiligheidsregio codes: 1 Groningen, 2 Fryslân, 3 Drenthe ... empty = all.
     p2000_regios: list[str] = field(default_factory=lambda: _list("P2000_REGIOS", "1,2,3"))
 
-    # NDW road incidents (DATEX II, open data, no key).
+    # NDW current traffic situations: accidents, queues, obstructions (DATEX II, no key).
     ndw_incidents_url: str = field(
-        default_factory=lambda: _env("NDW_INCIDENTS_URL", "https://opendata.ndw.nu/incidents.xml.gz")
+        default_factory=lambda: _env("NDW_INCIDENTS_URL", "https://opendata.ndw.nu/actueel_beeld.xml.gz")
     )
 
     # OVapi GTFS-realtime vehicle positions (buses, trams, trains; no key).
     gtfs_vehicles_url: str = field(
         default_factory=lambda: _env("GTFS_VEHICLES_URL", "https://gtfs.ovapi.nl/nl/vehiclePositions.pb")
     )
+    # OVapi GTFS-realtime service alerts, and the static GTFS archive for stop locations
+    # (only stops.txt is read from it, via HTTP range requests). May also point at a stops.txt.
+    gtfs_alerts_url: str = field(
+        default_factory=lambda: _env("GTFS_ALERTS_URL", "https://gtfs.ovapi.nl/nl/alerts.pb")
+    )
+    gtfs_stops_url: str = field(
+        default_factory=lambda: _env("GTFS_STOPS_URL", "https://gtfs.ovapi.nl/nl/gtfs-nl.zip")
+    )
+
+    # Windy webcams (free key at api.windy.com/keys).
+    windy_api_key: str = field(default_factory=lambda: _env("WINDY_API_KEY"))
 
     # NS disruptions (needs a free key from apiportal.ns.nl, product "Ns-App").
     ns_api_key: str = field(default_factory=lambda: _env("NS_API_KEY"))

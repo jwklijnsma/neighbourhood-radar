@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
+import { createRoot } from "react-dom/client";
 import L from "leaflet";
 import {
   Circle, CircleMarker, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents,
 } from "react-leaflet";
-import { ACCENT, CATEGORY_LABEL, colorFor, fmtTime } from "../constants.js";
+import { ACCENT, CATEGORY_LABEL, featureColor, fmtTime, safeUrl } from "../constants.js";
 
 const dark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 const TILE_URL = `https://{s}.basemaps.cartocdn.com/${dark ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png`;
@@ -70,45 +71,58 @@ function FlyToSelected({ selected }) {
     if (!selected) return;
     const [lon, lat] = selected.geometry.coordinates;
     map.setView([lat, lon], Math.max(map.getZoom(), 13));
-    L.popup().setLatLng([lat, lon]).setContent(popupNode(selected.properties)).openOn(map);
+    // Same React component as marker popups, rendered into a detached node.
+    const node = document.createElement("div");
+    const root = createRoot(node);
+    root.render(<PopupBody p={selected.properties} />);
+    const popup = L.popup({ maxWidth: 340 }).setLatLng([lat, lon]).setContent(node).openOn(map);
+    popup.on("remove", () => setTimeout(() => root.unmount()));
   }, [map, selected]);
   return null;
 }
 
+const STATE_LABEL = {
+  bridges: { open: "Brug open: weg dicht", planned: "Gepland" },
+  roadworks: { now: "Nu bezig", soon: "Binnenkort" },
+};
+
 function PopupBody({ p }) {
-  const meta = [CATEGORY_LABEL[p.category], fmtTime(p.time), p.distance_km != null ? `${p.distance_km} km` : null]
+  const meta = [
+    CATEGORY_LABEL[p.category] || STATE_LABEL[p.source]?.[p.category],
+    fmtTime(p.time),
+    p.distance_km != null ? `${p.distance_km} km` : null,
+  ]
     .filter(Boolean)
     .join(" · ");
+  const image = safeUrl(p.image);
+  const link = safeUrl(p.url);
   return (
     <div className="popup">
+      {image && (
+        <img
+          className="popup-img"
+          src={image}
+          alt={p.title}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={(e) => { e.currentTarget.style.display = "none"; }}
+        />
+      )}
       <b>{p.title}</b>
       {p.detail && <div>{p.detail}</div>}
       <div className="muted">{meta}</div>
+      {link && (
+        <a href={link} target="_blank" rel="noopener noreferrer">
+          {p.source === "webcams" ? "Bekijk op Windy" : "Meer info"}
+        </a>
+      )}
     </div>
   );
 }
 
-// For the imperative popup opened from the list: built with DOM APIs so feed
-// text is set via textContent, never parsed as HTML.
-function popupNode(p) {
-  const root = document.createElement("div");
-  root.className = "popup";
-  const add = (tag, text, cls) => {
-    if (!text) return;
-    const n = document.createElement(tag);
-    n.textContent = text;
-    if (cls) n.className = cls;
-    root.append(n);
-  };
-  add("b", p.title);
-  add("div", p.detail);
-  add("div", [CATEGORY_LABEL[p.category], fmtTime(p.time), p.distance_km != null ? `${p.distance_km} km` : null]
-    .filter(Boolean).join(" · "), "muted");
-  return root;
-}
-
+// divIcon html is a string: only numbers and our own constants go into it.
 function planeIcon(heading, color) {
-  const deg = Number(heading) || 0; // numeric only: this string becomes HTML
+  const deg = Number(heading) || 0;
   return L.divIcon({
     className: "",
     iconSize: [22, 22],
@@ -117,16 +131,43 @@ function planeIcon(heading, color) {
   });
 }
 
+function tempIcon(t, color) {
+  const n = Number(t);
+  const label = Number.isFinite(n) ? `${Math.round(n)}°` : "?";
+  return L.divIcon({
+    className: "",
+    iconSize: [38, 22],
+    iconAnchor: [19, 11],
+    html: `<div class="temp-badge" style="background:${color}">${label}</div>`,
+  });
+}
+
+function camIcon(color) {
+  return L.divIcon({
+    className: "",
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    html: `<svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="${color}" stroke="#fff" stroke-width="1.5"/><path d="M6 9h8v6H6zM14 11l4-2v6l-4-2z" fill="#fff"/></svg>`,
+  });
+}
+
+function iconFor(p, color) {
+  if (p.source === "aircraft" && p.heading != null) return planeIcon(p.heading, color);
+  if (p.source === "weather" && p.temperature != null) return tempIcon(p.temperature, color);
+  if (p.source === "webcams") return camIcon(color);
+  return null;
+}
+
+// Planned/not-yet-active things are drawn hollow.
+const HOLLOW = { bridges: "planned", roadworks: "soon" };
+
 function FeatureMarker({ f }) {
   const p = f.properties;
   const [lon, lat] = f.geometry.coordinates;
-  const color = colorFor(p.source);
-  const icon = useMemo(
-    () => (p.source === "aircraft" && p.heading != null ? planeIcon(p.heading, color) : null),
-    [p.source, p.heading, color],
-  );
+  const color = featureColor(p);
+  const icon = useMemo(() => iconFor(p, color), [p, color]);
   const popup = (
-    <Popup>
+    <Popup maxWidth={340}>
       <PopupBody p={p} />
     </Popup>
   );
@@ -136,16 +177,18 @@ function FeatureMarker({ f }) {
   let r = 7;
   if (p.source === "quakes" && p.magnitude != null) r = 5 + Math.max(0, p.magnitude) * 4;
   if (p.source === "transit") r = 5;
+  if (p.source === "air") r = 9;
+  const hollow = HOLLOW[p.source] === p.category;
   return (
     <CircleMarker
       center={[lat, lon]}
       radius={r}
       bubblingMouseEvents={false}
       pathOptions={{
-        color: "#fff",
-        weight: 1.5,
+        color: hollow ? color : "#fff",
+        weight: hollow ? 2.5 : 1.5,
         fillColor: color,
-        fillOpacity: p.source === "quakes" ? 0.55 : 0.9,
+        fillOpacity: hollow ? 0.15 : p.source === "quakes" ? 0.55 : 0.9,
       }}
     >
       {popup}

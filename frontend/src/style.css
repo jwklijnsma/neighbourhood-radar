@@ -102,3 +102,12 @@ footer { font-size: 11px; }
   .map { height: 55vh; grid-row: 1; }
   .panel { height: auto; grid-row: 2; border-right: 0; border-top: 1px solid var(--line); }
 }
+
+.popup { display: grid; gap: 2px; }
+.popup-img { width: 100%; max-width: 320px; border-radius: 6px; margin-bottom: 6px; display: block; }
+.popup a { margin-top: 4px; color: var(--accent); font-weight: 600; }
+.temp-badge {
+  color: #fff; font: 600 12px/22px system-ui, sans-serif; text-align: center;
+  border-radius: 11px; border: 1.5px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+.leaflet-popup-content .muted { color: #6b6a66; }

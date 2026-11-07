@@ -14,17 +14,36 @@ the three northern provinces; everything is configurable.
 | Layer | Source | Key needed | Refresh |
 |---|---|---|---|
 | `p2000` – 112 alerts | P2000 RSS from p2000.brandweer-berkel-enschot.nl (same feed as the Home Assistant P2000 component) | no | 30 s |
-| `traffic` – incidents | NDW open data `incidents.xml.gz` (DATEX II) | no | 60 s |
+| `traffic` – accidents, queues, obstructions | NDW open data `actueel_beeld.xml.gz` (DATEX II) | no | 60 s |
+| `bridges` – bridges open right now, and openings in the next 6 h | NDW `tijdelijke_verkeersmaatregelen_afsluitingen` (live) + `planningsfeed_brugopeningen` | no | 30 s |
+| `roadworks` – roadworks and events, now or in the next 24 h | NDW `planningsfeed_wegwerkzaamheden_en_evenementen` | no | 15 min |
+| `busalerts` – bus/tram/metro service alerts, on the affected stops | OVapi GTFS-realtime `alerts.pb` + `stops.txt` from `gtfs-nl.zip` (CC0) | no | 60 s |
 | `transit` – live vehicles | OVapi GTFS-realtime `vehiclePositions.pb` (CC0) | no | 20 s |
 | `trains` – disruptions | NS API `disruptions/v3` | yes, free (apiportal.ns.nl, product *Ns-App*) | 2 min |
+| `webcams` – live webcam images | Windy Webcams API v3 | yes, free (api.windy.com/keys) | 5 min |
+| `weather` – station measurements | Buienradar JSON feed | no | 10 min |
+| `air` – air quality index (LKI 1–11) | Luchtmeetnet open API | no | hourly |
 | `aircraft` | OpenSky Network `states/all`, bounding box | optional | 4 min anonymous / 30 s with OAuth client |
 | `satellites` | CelesTrak TLEs, SGP4 propagated locally | no | positions every 15 s |
 | `quakes` | KNMI FDSN event service (CC BY 4.0) | no | 5 min |
 
 Layers without their key show up greyed out ("Niet geconfigureerd") rather than failing.
 
-Traffic cameras from the original demo are not included: Rijkswaterstaat doesn't
-publish an open camera feed.
+Some layers need a slow first load and fill in a little after startup instead of
+holding up the page:
+
+* **busalerts** reads only `stops.txt` out of OVapi's national GTFS archive,
+  using HTTP range requests (a few MB instead of the whole archive), refreshed weekly.
+  If OVapi ever stops serving ranges, point `OL_GTFS_STOPS_URL` at a plain `stops.txt`.
+* **air** has to look up every station's location once; Luchtmeetnet allows
+  100 requests per 5 minutes, so that crawl takes about 6 minutes and is cached for a week.
+
+Traffic cameras as in the original demo aren't available: Rijkswaterstaat doesn't
+publish an open camera feed, so the `webcams` layer uses public webcams from Windy.
+
+Licences and terms: Buienradar's free feed requires attribution and is for
+non-commercial use; OpenSky data is for non-commercial use; KNMI data is CC BY 4.0;
+OVapi is CC0. Attribution for every layer is shown at the bottom of the side panel.
 
 ## How it works
 

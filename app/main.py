@@ -43,7 +43,7 @@ async def security_headers(request: Request, call_next):
     resp.headers.setdefault(
         "Content-Security-Policy",
         "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: https://*.basemaps.cartocdn.com; "
+        "img-src 'self' data: https://*.basemaps.cartocdn.com https://*.windy.com; "
         "connect-src 'self'; frame-ancestors 'none'",
     )
     return resp

@@ -22,6 +22,7 @@ config:
 secrets:
   existingSecret: ""
   OL_NS_API_KEY: ""
+  OL_WINDY_API_KEY: ""
   OL_OPENSKY_CLIENT_ID: ""
   OL_OPENSKY_CLIENT_SECRET: ""
 

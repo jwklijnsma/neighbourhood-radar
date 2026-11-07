@@ -1,0 +1,5 @@
+stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station
+2340001,,"Heerenveen, Station",52.96146,5.91672,0,
+2340002,,"Heerenveen, Station",52.96160,5.91700,0,
+2340010,,"Joure, Busstation",52.96530,5.80230,0,
+9990001,,"Amsterdam, Centraal",52.37890,4.90000,0,
