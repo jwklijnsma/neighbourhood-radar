@@ -15,6 +15,7 @@ from app import sources as registry  # noqa: E402
 from app.config import Settings  # noqa: E402
 from app.sources import air, transit_alerts  # noqa: E402
 from tests import builders  # noqa: E402
+from tests import builders_more  # noqa: E402
 
 CALLS: list[str] = []
 
@@ -34,6 +35,10 @@ def handler(request: httpx.Request) -> httpx.Response:
             return httpx.Response(200, content=plan)
         if "wegwerkzaamheden" in url:
             return httpx.Response(200, content=builders.roadworks_feed())
+        if "charging_point_locations_ocpi" in url:
+            return httpx.Response(200, content=builders_more.ocpi_locations())
+        if "dynamische_route_informatie_paneel" in url:
+            return httpx.Response(200, content=builders_more.drip_combined())
     if "ovapi" in url and url.endswith("alerts.pb"):
         import time
 
@@ -45,6 +50,14 @@ def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, content=(FX / "windy.json").read_bytes())
     if "buienradar" in url:
         return httpx.Response(200, content=(FX / "buienradar.json").read_bytes())
+    if "rijkswaterstaat" in url:
+        assert request.method == "POST"
+        if "OphalenCatalogus" in url:
+            return httpx.Response(200, json=builders_more.rws_catalogue())
+        return httpx.Response(200, json=builders_more.rws_latest())
+    if "overpass" in url:
+        assert request.method == "POST"
+        return httpx.Response(200, json=builders_more.overpass())
     if "luchtmeetnet" in url:
         path = request.url.path
         if path.endswith("/stations"):
@@ -85,8 +98,8 @@ def test_config_lists_layers(client):
     cfg = client.get("/api/config").json()
     names = [l["name"] for l in cfg["layers"]]
     assert names == [
-        "p2000", "traffic", "bridges", "roadworks", "busalerts", "transit", "trains",
-        "webcams", "weather", "air", "aircraft", "satellites", "quakes",
+        "p2000", "traffic", "bridges", "roadworks", "drips", "busalerts", "transit", "trains",
+        "webcams", "charging", "safety", "weather", "water", "air", "aircraft", "satellites", "quakes",
     ]
     assert all(l["configured"] for l in cfg["layers"])
 
@@ -116,6 +129,10 @@ def test_new_layers_end_to_end(client):
     assert len(_eventually(client, "roadworks")["features"]) == 2
     assert len(_eventually(client, "webcams")["features"]) == 2
     assert _eventually(client, "weather")["features"][0]["properties"]["temperature"] == 9.4
+    assert len(_eventually(client, "charging")["features"]) == 4
+    assert len(_eventually(client, "drips")["features"]) == 2
+    assert len(_eventually(client, "water")["features"]) == 2
+    assert len(_eventually(client, "safety")["features"]) == 4
 
 
 def test_unconfigured_layer_is_reported_and_skipped(client, monkeypatch):

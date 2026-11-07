@@ -54,6 +54,13 @@ class Settings:
         default_factory=lambda: _env("GTFS_STOPS_URL", "https://gtfs.ovapi.nl/nl/gtfs-nl.zip")
     )
 
+    # NDW dynamic route information panels. The table URL is only needed if NDW
+    # publishes the panel locations in a separate file.
+    ndw_drip_url: str = field(
+        default_factory=lambda: _env("NDW_DRIP_URL", "https://opendata.ndw.nu/dynamische_route_informatie_paneel.xml.gz")
+    )
+    ndw_drip_table_url: str = field(default_factory=lambda: _env("NDW_DRIP_TABLE_URL"))
+
     # Windy webcams (free key at api.windy.com/keys).
     windy_api_key: str = field(default_factory=lambda: _env("WINDY_API_KEY"))
 

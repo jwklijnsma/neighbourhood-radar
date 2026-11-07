@@ -111,3 +111,4 @@ footer { font-size: 11px; }
   border-radius: 11px; border: 1.5px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3);
 }
 .leaflet-popup-content .muted { color: #6b6a66; }
+.popup-img.drip { background: #111; padding: 6px; image-rendering: pixelated; }

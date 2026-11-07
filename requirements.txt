@@ -6,3 +6,4 @@ gtfs-realtime-bindings>=1.0
 protobuf>=4.21
 sgp4>=2.23,<3
 tzdata>=2024.1
+ijson>=3.3

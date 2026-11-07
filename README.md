@@ -17,11 +17,15 @@ the three northern provinces; everything is configurable.
 | `traffic` – accidents, queues, obstructions | NDW open data `actueel_beeld.xml.gz` (DATEX II) | no | 60 s |
 | `bridges` – bridges open right now, and openings in the next 6 h | NDW `tijdelijke_verkeersmaatregelen_afsluitingen` (live) + `planningsfeed_brugopeningen` | no | 30 s |
 | `roadworks` – roadworks and events, now or in the next 24 h | NDW `planningsfeed_wegwerkzaamheden_en_evenementen` | no | 15 min |
+| `drips` – what the dynamic route signs above the road show now (text, or the sign image) | NDW `dynamische_route_informatie_paneel` (DATEX II VMS) | no | 60 s |
 | `busalerts` – bus/tram/metro service alerts, on the affected stops | OVapi GTFS-realtime `alerts.pb` + `stops.txt` from `gtfs-nl.zip` (CC0) | no | 60 s |
 | `transit` – live vehicles | OVapi GTFS-realtime `vehiclePositions.pb` (CC0) | no | 20 s |
 | `trains` – disruptions | NS API `disruptions/v3` | yes, free (apiportal.ns.nl, product *Ns-App*) | 2 min |
 | `webcams` – live webcam images | Windy Webcams API v3 | yes, free (api.windy.com/keys) | 5 min |
+| `charging` – public EV charging points, coloured by live availability | NDW national OCPI export (streamed, ~18 MB) | no | 15 min |
+| `safety` – AEDs, hospitals, fire, police and ambulance stations | OpenStreetMap via Overpass API (ODbL) | no | daily |
 | `weather` – station measurements | Buienradar JSON feed | no | 10 min |
+| `water` – water levels in cm relative to NAP | Rijkswaterstaat waterwebservices (DDAPI 2.0) | no | 10 min |
 | `air` – air quality index (LKI 1–11) | Luchtmeetnet open API | no | hourly |
 | `aircraft` | OpenSky Network `states/all`, bounding box | optional | 4 min anonymous / 30 s with OAuth client |
 | `satellites` | CelesTrak TLEs, SGP4 propagated locally | no | positions every 15 s |
@@ -41,9 +45,15 @@ holding up the page:
 Traffic cameras as in the original demo aren't available: Rijkswaterstaat doesn't
 publish an open camera feed, so the `webcams` layer uses public webcams from Windy.
 
+If the DRIP layer reports that signs have no locations, NDW is publishing the
+sign locations in a separate table file: set `OL_NDW_DRIP_TABLE_URL` to it.
+
+AED locations come from OpenStreetMap volunteers and are not the official
+HartslagNu register. Don't rely on the map in an emergency: call 112.
+
 Licences and terms: Buienradar's free feed requires attribution and is for
 non-commercial use; OpenSky data is for non-commercial use; KNMI data is CC BY 4.0;
-OVapi is CC0. Attribution for every layer is shown at the bottom of the side panel.
+OVapi is CC0; OpenStreetMap data is ODbL. Attribution for every layer is shown at the bottom of the side panel.
 
 ## How it works
 

@@ -4,7 +4,7 @@ import L from "leaflet";
 import {
   Circle, CircleMarker, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents,
 } from "react-leaflet";
-import { ACCENT, CATEGORY_LABEL, featureColor, fmtTime, safeUrl } from "../constants.js";
+import { ACCENT, CATEGORY_LABEL, featureColor, fmtTime, safeImage, safeUrl } from "../constants.js";
 
 const dark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 const TILE_URL = `https://{s}.basemaps.cartocdn.com/${dark ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png`;
@@ -13,7 +13,7 @@ const TILE_ATTR =
 
 export default function MapView({ point, radius, fitRadius, layers, enabled, data, selected, onPick }) {
   return (
-    <MapContainer className="map" center={[point.lat, point.lon]} zoom={11}>
+    <MapContainer className="map" center={[point.lat, point.lon]} zoom={11} preferCanvas>
       <TileLayer url={TILE_URL} attribution={TILE_ATTR} subdomains="abcd" maxZoom={19} />
       <ClickToPick onPick={onPick} />
       <FitToRadius point={point} radius={fitRadius} />
@@ -94,13 +94,13 @@ function PopupBody({ p }) {
   ]
     .filter(Boolean)
     .join(" · ");
-  const image = safeUrl(p.image);
+  const image = safeImage(p.image);
   const link = safeUrl(p.url);
   return (
     <div className="popup">
       {image && (
         <img
-          className="popup-img"
+          className={p.source === "drips" ? "popup-img drip" : "popup-img"}
           src={image}
           alt={p.title}
           loading="lazy"
@@ -113,7 +113,7 @@ function PopupBody({ p }) {
       <div className="muted">{meta}</div>
       {link && (
         <a href={link} target="_blank" rel="noopener noreferrer">
-          {p.source === "webcams" ? "Bekijk op Windy" : "Meer info"}
+          {p.source === "webcams" ? "Bekijk op Windy" : p.source === "safety" ? "Bekijk op OpenStreetMap" : "Meer info"}
         </a>
       )}
     </div>
@@ -151,10 +151,31 @@ function camIcon(color) {
   });
 }
 
+function badgeIcon(label, color, width = 38) {
+  return L.divIcon({
+    className: "",
+    iconSize: [width, 22],
+    iconAnchor: [width / 2, 11],
+    html: `<div class="temp-badge" style="background:${color}">${label}</div>`,
+  });
+}
+
+// Fixed glyphs per OSM category; never feed text.
+const SAFETY_GLYPH = { aed: "♥", hospital: "H", fire_station: "B", police: "P", ambulance_station: "A" };
+
+function waterIcon(level, color) {
+  const n = Number(level);
+  const label = Number.isFinite(n) ? `${n > 0 ? "+" : ""}${Math.round(n)}` : "?";
+  return badgeIcon(label, color, 44);
+}
+
 function iconFor(p, color) {
   if (p.source === "aircraft" && p.heading != null) return planeIcon(p.heading, color);
   if (p.source === "weather" && p.temperature != null) return tempIcon(p.temperature, color);
   if (p.source === "webcams") return camIcon(color);
+  if (p.source === "water" && p.level_cm != null) return waterIcon(p.level_cm, color);
+  if (p.source === "safety") return badgeIcon(SAFETY_GLYPH[p.category] || "+", color, 22);
+  if (p.source === "drips") return badgeIcon("▤", color, 22);
   return null;
 }
 
@@ -178,6 +199,7 @@ function FeatureMarker({ f }) {
   if (p.source === "quakes" && p.magnitude != null) r = 5 + Math.max(0, p.magnitude) * 4;
   if (p.source === "transit") r = 5;
   if (p.source === "air") r = 9;
+  if (p.source === "charging") r = p.fast ? 7 : 5;
   const hollow = HOLLOW[p.source] === p.category;
   return (
     <CircleMarker
