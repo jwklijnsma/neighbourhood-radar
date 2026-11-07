@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { colorFor, fmtTime } from "../constants.js";
+import { colorFor, featureColor, fmtTime } from "../constants.js";
 
 export default function Sidebar({
   point, radius, maxRadius, onRadius, onLocate,
@@ -115,7 +115,7 @@ function LayerRow({ meta, on, state, onToggle }) {
 function NearbyItem({ f, onSelect }) {
   const p = f.properties;
   return (
-    <li style={{ "--c": colorFor(p.source) }}>
+    <li style={{ "--c": featureColor(p) }}>
       <button type="button" onClick={() => onSelect(f)}>
         <span className="t">{p.title}</span>
         {p.detail && <span className="d">{p.detail}</span>}

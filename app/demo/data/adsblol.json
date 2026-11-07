@@ -1,0 +1,65 @@
+{
+ "now": 1793000000000,
+ "total": 4,
+ "ac": [
+  {
+   "hex": "4840d6",
+   "flight": "KLM1234 ",
+   "r": "PH-BXA",
+   "t": "B738",
+   "desc": "BOEING 737-800",
+   "ownOp": "KLM",
+   "lat": 52.98,
+   "lon": 5.95,
+   "alt_baro": 36000,
+   "gs": 450.2,
+   "track": 45.3,
+   "baro_rate": -64,
+   "squawk": "1000",
+   "category": "A3",
+   "seen_pos": 0.4,
+   "dbFlags": 0
+  },
+  {
+   "hex": "~3c6444",
+   "flight": "",
+   "lat": null,
+   "lon": null,
+   "seen_pos": 1
+  },
+  {
+   "hex": "480c1d",
+   "flight": "LIFE4   ",
+   "r": "PH-DMO",
+   "t": "EC35",
+   "lat": 52.95,
+   "lon": 5.93,
+   "alt_baro": 1200,
+   "gs": 120,
+   "track": 200,
+   "category": "A7",
+   "seen_pos": 2
+  },
+  {
+   "hex": "48aaaa",
+   "flight": "STALE",
+   "lat": 52.95,
+   "lon": 5.93,
+   "alt_baro": 5000,
+   "seen_pos": 600
+  },
+  {
+   "hex": "4b1234",
+   "flight": "NAF01",
+   "r": "J-015",
+   "t": "F35",
+   "lat": 53.0,
+   "lon": 5.9,
+   "alt_baro": "ground",
+   "gs": 0,
+   "squawk": "7700",
+   "dbFlags": 1,
+   "seen_pos": 1
+  }
+ ]
+}

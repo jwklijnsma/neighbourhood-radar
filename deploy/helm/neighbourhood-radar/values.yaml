@@ -16,6 +16,9 @@ config:
   OL_CELESTRAK_GROUPS: "stations,visual"
   OL_SAT_MIN_ELEVATION_DEG: "10"
   OL_DISABLED_SOURCES: ""
+  OL_AIRCRAFT_SOURCE: "auto"
+  OL_READSB_URL: ""
+  OL_AIRCRAFT_TRAIL_MINUTES: "10"
 
 # Optional API keys. Either fill these in (a Secret is rendered) or point
 # existingSecret at a Secret with the same keys (e.g. from Sealed Secrets / ESO).
@@ -23,6 +26,7 @@ secrets:
   existingSecret: ""
   OL_NS_API_KEY: ""
   OL_WINDY_API_KEY: ""
+  OL_FR24_API_TOKEN: ""
   OL_OPENSKY_CLIENT_ID: ""
   OL_OPENSKY_CLIENT_SECRET: ""
 

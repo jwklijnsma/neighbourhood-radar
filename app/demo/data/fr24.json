@@ -1,0 +1,47 @@
+{
+ "data": [
+  {
+   "fr24_id": "3b4c5d6e",
+   "flight": "KL1234",
+   "callsign": "KLM1234",
+   "lat": 52.98,
+   "lon": 5.95,
+   "track": 45,
+   "alt": 36000,
+   "gspeed": 450,
+   "vspeed": 0,
+   "squawk": "1000",
+   "timestamp": "2026-11-07T20:00:00Z",
+   "source": "ADSB",
+   "hex": "4840D6",
+   "type": "B738",
+   "reg": "PH-BXA",
+   "painted_as": "KLM",
+   "operating_as": "KLM",
+   "orig_iata": "AMS",
+   "orig_icao": "EHAM",
+   "dest_iata": "OSL",
+   "dest_icao": "ENGM",
+   "eta": "2026-11-07T21:10:00Z"
+  },
+  {
+   "fr24_id": "3b4c5d6f",
+   "callsign": "",
+   "lat": 52.9,
+   "lon": 5.8,
+   "track": 0,
+   "alt": 0,
+   "gspeed": 0,
+   "vspeed": 0,
+   "squawk": "",
+   "timestamp": "2026-11-07T20:00:00Z",
+   "source": "ADSB",
+   "reg": "PH-ABC"
+  },
+  {
+   "fr24_id": "x",
+   "lat": null,
+   "lon": null
+  }
+ ]
+}

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from app.geo import bbox, haversine_km
-from app.sources import gtfs_vehicles, knmi, ndw, ns, opensky, p2000, satellites
+from app.sources import aircraft, gtfs_vehicles, knmi, ndw, ns, p2000, satellites
 
 FX = Path(__file__).parent.parent / "app" / "demo" / "data"
 HEERENVEEN = (52.9594, 5.9189)
@@ -60,7 +60,8 @@ def test_ns_active_only_and_station_pins():
 
 
 def test_opensky_skips_missing_positions():
-    feats = opensky.parse(json.loads((FX / "opensky.json").read_text()))
+    planes = aircraft.parse_opensky(json.loads((FX / "opensky.json").read_text()))
+    feats = [aircraft.to_feature(p) for p in planes]
     assert [f["properties"]["title"] for f in feats] == ["KLM1234", "PH-ABC"]
     klm = feats[0]["properties"]
     assert klm["category"] == "airborne" and klm["heading"] == 45 and "36.089 ft" in klm["detail"]

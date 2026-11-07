@@ -14,6 +14,7 @@ export const COLORS = {
   water: "#1864ab",
   air: "#2f9e44",
   aircraft: "#0ca678",
+  airports: "#5f3dc4",
   satellites: "#ae3ec9",
   quakes: "#795548",
 };
@@ -34,6 +35,14 @@ export const CHARGING_COLORS = {
   unknown: "#74c0fc",
 };
 
+export const AIRCRAFT_COLORS = {
+  emergency: "#e03131",
+  helicopter: "#e8590c",
+  military: "#5c940d",
+  ground: "#868e96",
+  airborne: "#0ca678",
+};
+
 export const CATEGORY_LABEL = {
   fire: "Brandweer",
   ambulance: "Ambulance",
@@ -49,7 +58,19 @@ export const DEFAULT_ON = new Set(["p2000", "traffic", "bridges", "busalerts", "
 
 // Layers left out of the "Dichtbij" list: they're conditions or fixed things,
 // not events, and would push the actual news off the list.
-export const NOT_IN_NEARBY = new Set(["transit", "webcams", "weather", "air", "charging", "safety", "water"]);
+export const NOT_IN_NEARBY = new Set([
+  "transit", "webcams", "weather", "air", "charging", "safety", "water", "airports",
+]);
+
+/** Aircraft only make the "nearby" list when they matter locally: emergencies,
+ *  helicopters, or anything low enough to be landing, taking off or circling. */
+export function inNearby(f) {
+  const p = f.properties;
+  if (NOT_IN_NEARBY.has(p.source)) return false;
+  if (p.source !== "aircraft") return true;
+  if (p.category === "emergency" || p.category === "helicopter") return true;
+  return p.altitude_m != null && p.altitude_m < 1000;
+}
 
 export const ACCENT = "#e8590c";
 
@@ -61,6 +82,7 @@ export function colorFor(name) {
 export function featureColor(p) {
   if (p.source === "air") return AIR_COLORS[p.category] || COLORS.air;
   if (p.source === "charging") return CHARGING_COLORS[p.category] || COLORS.charging;
+  if (p.source === "aircraft") return AIRCRAFT_COLORS[p.category] || COLORS.aircraft;
   return colorFor(p.source);
 }
 

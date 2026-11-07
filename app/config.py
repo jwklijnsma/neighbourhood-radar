@@ -67,6 +67,23 @@ class Settings:
     # NS disruptions (needs a free key from apiportal.ns.nl, product "Ns-App").
     ns_api_key: str = field(default_factory=lambda: _env("NS_API_KEY"))
 
+    # Aircraft. OL_AIRCRAFT_SOURCE picks the provider:
+    #   auto (default)  fr24 if a token is set, else readsb if a URL is set, else adsblol
+    #   adsblol         adsb.lol, open data (ODbL), no key
+    #   airplaneslive   airplanes.live, no key, non-commercial use only
+    #   opensky         OpenSky Network (optional OAuth2 client below)
+    #   fr24            Flightradar24 official API (paid subscription, token below)
+    #   readsb          your own receiver: readsb / dump1090-fa / tar1090 aircraft.json
+    aircraft_source: str = field(default_factory=lambda: _env("AIRCRAFT_SOURCE", "auto").lower())
+    fr24_api_token: str = field(default_factory=lambda: _env("FR24_API_TOKEN"))
+    # "full" adds type, registration and route (costs more credits than "light").
+    fr24_endpoint: str = field(default_factory=lambda: _env("FR24_ENDPOINT", "full").lower())
+    readsb_url: str = field(default_factory=lambda: _env("READSB_URL"))
+    # Seconds between aircraft refreshes; 0 = the provider's default.
+    aircraft_ttl: float = field(default_factory=lambda: _float("AIRCRAFT_TTL", 0))
+    # Minutes of track history drawn behind each aircraft (0 = no trails).
+    aircraft_trail_minutes: float = field(default_factory=lambda: _float("AIRCRAFT_TRAIL_MINUTES", 10))
+
     # OpenSky Network. Anonymous works (400 credits/day); OAuth2 client raises that to 4000.
     opensky_client_id: str = field(default_factory=lambda: _env("OPENSKY_CLIENT_ID"))
     opensky_client_secret: str = field(default_factory=lambda: _env("OPENSKY_CLIENT_SECRET"))

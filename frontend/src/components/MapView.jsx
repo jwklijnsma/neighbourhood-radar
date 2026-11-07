@@ -3,7 +3,7 @@ import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import L from "leaflet";
 import {
-  Circle, CircleMarker, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents,
+  Circle, CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents,
 } from "react-leaflet";
 import { ACCENT, CATEGORY_LABEL, featureColor, fmtTime, safeImage, safeUrl } from "../constants.js";
 
@@ -26,6 +26,10 @@ export default function MapView({ point, radius, fitRadius, layers, enabled, dat
         pathOptions={{ color: "#fff", weight: 2, fillColor: ACCENT, fillOpacity: 1 }}
         interactive={false}
       />
+      {enabled.aircraft &&
+        (data.aircraft?.features || [])
+          .filter((f) => Array.isArray(f.properties.trail) && f.properties.trail.length > 1)
+          .map((f) => <Trail key={`trail-${f.properties.id}`} f={f} />)}
       {layers
         .filter((m) => enabled[m.name])
         .flatMap((m) =>
@@ -33,6 +37,22 @@ export default function MapView({ point, radius, fitRadius, layers, enabled, dat
         )}
       <FlyToSelected selected={selected} />
     </MapContainer>
+  );
+}
+
+/** Flown path of one aircraft, ending at its current position. */
+function Trail({ f }) {
+  const p = f.properties;
+  const [lon, lat] = f.geometry.coordinates;
+  const pts = p.trail
+    .filter((pt) => Array.isArray(pt) && Number.isFinite(pt[0]) && Number.isFinite(pt[1]))
+    .concat([[lat, lon]]);
+  return (
+    <Polyline
+      positions={pts}
+      interactive={false}
+      pathOptions={{ color: featureColor(p), weight: 2, opacity: 0.55, dashArray: p.category === "ground" ? "2 4" : null }}
+    />
   );
 }
 
@@ -79,9 +99,19 @@ function FlyToSelected({ selected }) {
   return null;
 }
 
+const LINK_LABEL = {
+  webcams: "Bekijk op Windy",
+  safety: "Bekijk op OpenStreetMap",
+  aircraft: "Volg deze vlucht",
+};
+
 const STATE_LABEL = {
   bridges: { open: "Brug open: weg dicht", planned: "Gepland" },
   roadworks: { now: "Nu bezig", soon: "Binnenkort" },
+  aircraft: {
+    emergency: "Noodsituatie", helicopter: "Helikopter", military: "Militair",
+    ground: "Aan de grond", airborne: "In de lucht",
+  },
 };
 
 function PopupBody({ p }) {
@@ -111,7 +141,7 @@ function PopupBody({ p }) {
       <div className="muted">{meta}</div>
       {link && (
         <a href={link} target="_blank" rel="noopener noreferrer">
-          {p.source === "webcams" ? "Bekijk op Windy" : p.source === "safety" ? "Bekijk op OpenStreetMap" : "Meer info"}
+          {LINK_LABEL[p.source] || "Meer info"}
         </a>
       )}
     </div>
@@ -126,6 +156,17 @@ function planeIcon(heading, color) {
     iconSize: [22, 22],
     iconAnchor: [11, 11],
     html: `<svg width="22" height="22" viewBox="0 0 24 24" style="transform:rotate(${deg}deg)"><path d="M12 2l2 7 7 4v2l-7-2-1 5 3 2v2l-4-1-4 1v-2l3-2-1-5-7 2v-2l7-4z" fill="${color}" stroke="#fff" stroke-width="1"/></svg>`,
+  });
+}
+
+// Top-down helicopter: rotor disc, body and tail boom.
+function heliIcon(heading, color) {
+  const deg = Number(heading) || 0;
+  return L.divIcon({
+    className: "",
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    html: `<svg width="24" height="24" viewBox="0 0 24 24" style="transform:rotate(${deg}deg)"><circle cx="12" cy="10" r="8" fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 2"/><path d="M12 5c2 0 3 2 3 5s-1 4-3 4-3-1-3-4 1-5 3-5zM11.3 14h1.4v7h-1.4zM9.5 20.5h5v1.2h-5z" fill="${color}" stroke="#fff" stroke-width=".8"/></svg>`,
   });
 }
 
@@ -158,6 +199,8 @@ function badgeIcon(label, color, width = 38) {
   });
 }
 
+const AIRPORT_GLYPH = { heliport: "H", seaplane_base: "≈", balloonport: "○" };
+
 // Fixed glyphs per OSM category; never feed text.
 const SAFETY_GLYPH = { aed: "♥", hospital: "H", fire_station: "B", police: "P", ambulance_station: "A" };
 
@@ -168,7 +211,14 @@ function waterIcon(level, color) {
 }
 
 function iconFor(p, color) {
-  if (p.source === "aircraft" && p.heading != null) return planeIcon(p.heading, color);
+  if (p.source === "aircraft" && p.category === "helicopter") return heliIcon(p.heading, color);
+  if (p.source === "aircraft") {
+    const icon = planeIcon(p.heading, color);
+    // Emergencies pulse so they stand out among dozens of aircraft.
+    if (p.category === "emergency") icon.options.className = "pulse";
+    return icon;
+  }
+  if (p.source === "airports") return badgeIcon(AIRPORT_GLYPH[p.category] || "✈", color, 22);
   if (p.source === "weather" && p.temperature != null) return tempIcon(p.temperature, color);
   if (p.source === "webcams") return camIcon(color);
   if (p.source === "water" && p.level_cm != null) return waterIcon(p.level_cm, color);
@@ -191,7 +241,8 @@ function FeatureMarker({ f }) {
     </Popup>
   );
   if (icon) {
-    return <Marker position={[lat, lon]} icon={icon}>{popup}</Marker>;
+    const front = p.category === "emergency" ? 1000 : 0;
+    return <Marker position={[lat, lon]} icon={icon} zIndexOffset={front}>{popup}</Marker>;
   }
   let r = 7;
   if (p.source === "quakes" && p.magnitude != null) r = 5 + Math.max(0, p.magnitude) * 4;

@@ -69,8 +69,12 @@ def handler(request: httpx.Request) -> httpx.Response:
     if "apiportal.ns.nl" in url:
         assert request.headers["Ocp-Apim-Subscription-Key"] == "test-key"
         return httpx.Response(200, content=(FX / "ns.json").read_bytes())
-    if "opensky" in url:
-        return httpx.Response(200, content=(FX / "opensky.json").read_bytes())
+    if "adsb.lol" in url:
+        return httpx.Response(200, content=(FX / "adsblol.json").read_bytes())
+    if "ourairports" in url:
+        from app.demo import airports
+
+        return httpx.Response(200, content=airports(52.9594, 5.9189))
     if "celestrak" in url:
         return httpx.Response(200, text=(FX / "stations.tle").read_text())
     if "knmi" in url:
@@ -99,7 +103,7 @@ def test_config_lists_layers(client):
     names = [l["name"] for l in cfg["layers"]]
     assert names == [
         "p2000", "traffic", "bridges", "roadworks", "drips", "busalerts", "transit", "trains",
-        "webcams", "charging", "safety", "weather", "water", "air", "aircraft", "satellites", "quakes",
+        "webcams", "charging", "safety", "weather", "water", "air", "aircraft", "airports", "satellites", "quakes",
     ]
     assert all(l["configured"] for l in cfg["layers"])
 
@@ -155,7 +159,7 @@ def test_layer_radius_filter_and_distance_sorting(client):
 def test_cache_prevents_repeat_upstream_calls(client):
     for _ in range(3):
         client.get("/api/layers/aircraft")
-    assert sum("opensky" in c for c in CALLS) == 1
+    assert sum("adsb.lol" in c for c in CALLS) == 1
 
 
 def test_failed_source_reports_error_not_500(client):

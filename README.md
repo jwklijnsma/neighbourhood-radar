@@ -49,9 +49,30 @@ works offline and needs no keys. The page shows a yellow "Demo" banner.
 | `weather` – station measurements | Buienradar JSON feed | no | 10 min |
 | `water` – water levels in cm relative to NAP | Rijkswaterstaat waterwebservices (DDAPI 2.0) | no | 10 min |
 | `air` – air quality index (LKI 1–11) | Luchtmeetnet open API | no | hourly |
-| `aircraft` | OpenSky Network `states/all`, bounding box | optional | 4 min anonymous / 30 s with OAuth client |
+| `aircraft` – aircraft with type, registration, altitude, speed and a trail of where they flew; emergencies (squawk 7500/7600/7700) pulse red, helicopters get their own icon | **adsb.lol** (open data, ODbL) by default; or Flightradar24, OpenSky, airplanes.live, or your own ADS-B receiver (see below) | no (FR24: paid token) | 15 s |
+| `airports` – airports, airfields and heliports | OurAirports (public domain) | no | daily |
 | `satellites` | CelesTrak TLEs, SGP4 propagated locally | no | positions every 15 s |
 | `quakes` | KNMI FDSN event service (CC BY 4.0) | no | 5 min |
+
+### Aircraft providers
+
+Set `OL_AIRCRAFT_SOURCE` (default `auto`):
+
+| Value | Source | Notes |
+|---|---|---|
+| `adsblol` | [adsb.lol](https://adsb.lol) | Open data (ODbL), no key. Default. |
+| `fr24` | [Flightradar24 API](https://fr24api.flightradar24.com) | Paid subscription. Set `OL_FR24_API_TOKEN`. Adds routes (AMS → OSL). `OL_FR24_ENDPOINT=light` uses fewer credits but drops type, registration and route. Polls every 60 s; check your credit usage in the FR24 portal and raise `OL_AIRCRAFT_TTL` if needed. |
+| `readsb` | Your own receiver | Set `OL_READSB_URL` to its `aircraft.json` (readsb, dump1090-fa, tar1090, e.g. `http://pi/tar1090/data/aircraft.json`). Polls every 5 s. |
+| `opensky` | OpenSky Network | Optional OAuth client for more requests. |
+| `airplaneslive` | airplanes.live | No key, non-commercial use only. |
+
+`auto` picks `fr24` if a token is set, else `readsb` if a URL is set, else `adsblol`.
+Trails show the last 10 minutes (`OL_AIRCRAFT_TRAIL_MINUTES`, 0 turns them off).
+Airliners at cruising height don't fill the "Dichtbij" list: only emergencies,
+helicopters and aircraft below 1000 m do.
+
+Flightradar24's website data isn't open and scraping it is against their terms,
+so this only uses their official API.
 
 Layers without their key show up greyed out ("Niet geconfigureerd") rather than failing.
 
@@ -83,7 +104,7 @@ OVapi is CC0; OpenStreetMap data is ODbL. Attribution for every layer is shown a
 browser (React) ────/api/layers/{name}?lat&lon&radius_km──▶ FastAPI
                                                               │  per-source TTL cache
                                                               ▼  (one fetch serves all viewers)
-                       P2000 · NDW · OVapi · NS · OpenSky · CelesTrak · KNMI
+                       P2000 · NDW · OVapi · NS · adsb.lol/FR24 · CelesTrak · KNMI · …
 ```
 
 * Each source fetches **once for the whole configured region** (`OL_REGION_RADIUS_KM`
@@ -91,8 +112,9 @@ browser (React) ────/api/layers/{name}?lat&lon&radius_km──▶ FastAP
   with the page open cost the upstreams the same as one.
 * A failing upstream keeps serving the last good data and reports the error in
   `status.last_error`; the UI marks the layer "Bron niet bereikbaar".
-* OpenSky's anonymous budget is 400 credits/day; one region box costs 1 credit,
-  so the 240 s TTL stays under it even with the page open 24/7.
+* Rate-limited providers get conservative refresh intervals: OpenSky's anonymous
+  budget is 400 credits/day (one region box costs 1), so it refreshes every 240 s;
+  Flightradar24 every 60 s.
 * The UI is React + react-leaflet (Vite), in `frontend/`. It builds into
   `app/static`, which FastAPI serves, so production is still one container.
 * Feed text is only rendered as React text (escaped); strict CSP, no
@@ -109,7 +131,7 @@ browser (React) ────/api/layers/{name}?lat&lon&radius_km──▶ FastAP
 ## Run it
 
 ```bash
-cp .env.example .env          # optional: add NS / OpenSky keys
+cp .env.example .env          # optional: add NS / Windy / FR24 keys
 docker compose up -d --build  # http://localhost:8080
 ```
 
@@ -145,7 +167,8 @@ Or from a checkout: `helm upgrade --install neighbourhood-radar deploy/helm/neig
 The image runs as an arbitrary UID with group 0 and a read-only root filesystem,
 so it fits `restricted-v2` without an SCC exception. Use `secrets.existingSecret`
 for Sealed Secrets / External Secrets in a GitOps setup. Keep `replicaCount: 1`:
-the cache is in-memory, and each replica would spend its own OpenSky credits.
+the cache is in-memory, and each replica would spend its own API credits
+(OpenSky, Flightradar24).
 
 ## Configuration
 
@@ -198,6 +221,7 @@ cluster a pull secret.
   away, point `OL_P2000_URL` at another RSS feed with the same item fields
   (`message`, `regcode`, `dienst`, `code`, `lat`, `lon`), or run your own
   RTL-SDR + multimon-ng receiver.
-* OpenSky data is for non-commercial use under their terms.
+* OpenSky and airplanes.live data are for non-commercial use under their terms;
+  adsb.lol data is ODbL (attribution shown in the app).
 * P2000 messages are public broadcasts, but they describe real emergencies at
   real addresses. Think before exposing this publicly.

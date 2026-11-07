@@ -85,16 +85,56 @@ def vehicles(lat: float, lon: float) -> bytes:
     return m.SerializeToString()
 
 
-def opensky(lat: float, lon: float) -> dict:
+DEMO_AIRCRAFT = [
+    # callsign, reg, type, desc, operator, alt_ft, gs_kt, km_from_centre, extra
+    ("KLM1567", "PH-BXA", "B738", "BOEING 737-800", "KLM", 36000, 450, 9, {}),
+    ("TRA6721", "PH-HSJ", "B738", "BOEING 737-800", "Transavia", 24000, 420, 6, {"baro_rate": -1600}),
+    ("EZY78QK", "G-UZHA", "A20N", "AIRBUS A320neo", "easyJet", 38000, 460, 10, {}),
+    ("RYR5HB", "EI-DCL", "B738", "BOEING 737-800", "Ryanair", 33000, 440, 8, {}),
+    ("DLH9TA", "D-AINA", "A20N", "AIRBUS A320neo", "Lufthansa", 21000, 380, 5, {"baro_rate": 1800}),
+    ("LIFE4", "PH-DMO", "EC35", "EUROCOPTER EC-135", "Traumaheli (demo)", 1200, 120, 3, {"category": "A7"}),
+    ("PHHOW", "PH-HOW", "C172", "CESSNA 172", "", 1800, 95, 4, {}),
+    ("DEMO77", "PH-XYZ", "PC12", "PILATUS PC-12", "", 9000, 240, 7, {"squawk": "7700", "emergency": "general"}),
+]
+
+
+def aircraft(lat: float, lon: float) -> dict:
+    """readsb-format response (as from api.adsb.lol) that drifts with time, so
+    trails build up while the demo runs."""
+    import math
+
     rng = _rng(5)
-    now = int(time.time())
-    states = []
-    for i, cs in enumerate(["KLM1567", "TRA6721", "EZY78QK", "RYR5HB", "DLH9TA", "PHHOW"]):
-        la, lo = _around(rng, lat, lon, 10)
-        alt = rng.choice([1200, 6000, 10972, 11582, 9144])
-        states.append([f"48{i:04x}", cs.ljust(8), "Kingdom of the Netherlands", now, now, lo, la, alt,
-                       False, rng.uniform(140, 250), rng.uniform(0, 360), 0.0, None, alt, "1000", False, 0])
-    return {"time": now, "states": states}
+    t = time.time()
+    ac = []
+    for i, (cs, reg, typ, desc, op, alt, gs, km, extra) in enumerate(DEMO_AIRCRAFT):
+        bearing = rng.uniform(0, 360)
+        track = (bearing + 90) % 360
+        # each aircraft circles the centre slowly; position depends on the clock
+        angle = math.radians(bearing + (t / 30) * (gs / 400) * 2)
+        la = lat + (km / 111.0) * math.cos(angle)
+        lo = lon + (km / 67.0) * math.sin(angle)
+        ac.append({
+            "hex": f"48{i:04x}", "flight": cs.ljust(8), "r": reg, "t": typ, "desc": desc, "ownOp": op,
+            "lat": round(la, 5), "lon": round(lo, 5), "alt_baro": alt, "gs": gs,
+            "track": round((math.degrees(angle) + 90) % 360, 1), "squawk": "1000", "category": "A3",
+            "seen_pos": rng.uniform(0, 3), "dbFlags": 0, **extra,
+        })
+    return {"now": int(t * 1000), "ac": ac, "msg": "No error", "total": len(ac)}
+
+
+def airports(lat: float, lon: float) -> bytes:
+    rows = [
+        ("EHLW", "medium_airport", "Leeuwarden Air Base", 53.2286, 5.7606, "Leeuwarden", "", ""),
+        ("EHDR", "small_airport", "Drachten Airfield", 53.1192, 6.1297, "Drachten", "", ""),
+        ("EHHV", "small_airport", "Heerenveen Airfield (demo)", lat - 0.03, lon + 0.05, "Heerenveen", "", ""),
+        ("NL-0001", "heliport", "Ziekenhuis Heliport (demo)", lat - 0.006, lon + 0.016, "Heerenveen", "", ""),
+        ("EHGG", "medium_airport", "Groningen Airport Eelde", 53.1197, 6.5794, "Groningen", "GRQ", "yes"),
+        ("EHOLD", "closed", "Old strip", lat, lon, "", "", ""),
+    ]
+    head = "id,ident,type,name,latitude_deg,longitude_deg,municipality,iata_code,scheduled_service,gps_code\n"
+    body = "".join(f'{i},{r[0]},{r[1]},"{r[2]}",{r[3]},{r[4]},{r[5]},{r[6]},{r[7]},{r[0]}\n'
+                   for i, r in enumerate(rows))
+    return (head + body).encode()
 
 
 def charging(lat: float, lon: float) -> bytes:
@@ -168,8 +208,10 @@ def make_handler(lat: float, lon: float):
             return httpx.Response(200, content=vehicles(lat, lon))
         if "apiportal.ns.nl" in url:
             return httpx.Response(200, content=(DATA / "ns.json").read_bytes())
-        if "opensky" in url:
-            return httpx.Response(200, json=opensky(lat, lon))
+        if "adsb.lol" in url or "airplanes.live" in url:
+            return httpx.Response(200, json=aircraft(lat, lon))
+        if "ourairports" in url:
+            return httpx.Response(200, content=airports(lat, lon))
         if "celestrak" in url:
             return httpx.Response(200, text=(DATA / "stations.tle").read_text())
         if "knmi" in url:
@@ -210,6 +252,7 @@ def enable(settings):
     transit_alerts.TransitAlertSource._load_stops = demo_stops
     demo_settings = dataclasses.replace(
         settings,
+        aircraft_source="adsblol",  # the demo answers in readsb format
         ns_api_key=settings.ns_api_key or "demo",
         windy_api_key=settings.windy_api_key or "demo",
     )

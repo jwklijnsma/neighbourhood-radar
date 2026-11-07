@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DEFAULT_ON, NOT_IN_NEARBY } from "./constants.js";
+import { DEFAULT_ON, NOT_IN_NEARBY, inNearby } from "./constants.js";
 import { loadPrefs, savePrefs } from "./prefs.js";
 import { useLayer } from "./useLayer.js";
 import Sidebar from "./components/Sidebar.jsx";
@@ -72,7 +72,7 @@ function Live({ cfg }) {
     const all = [];
     for (const m of cfg.layers) {
       if (!enabled[m.name] || NOT_IN_NEARBY.has(m.name)) continue;
-      all.push(...(data[m.name]?.features || []));
+      all.push(...(data[m.name]?.features || []).filter(inNearby));
     }
     return all.sort((a, b) => a.properties.distance_km - b.properties.distance_km);
   }, [cfg.layers, enabled, data]);

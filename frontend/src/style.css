@@ -123,3 +123,12 @@ footer { font-size: 11px; }
   .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9); }
   .leaflet-container { background: #1c1c1a; }
 }
+
+/* Aircraft in an emergency: red pulsing halo (static when reduced motion is preferred). */
+.pulse svg { filter: drop-shadow(0 0 3px #e03131); }
+.pulse::before {
+  content: ""; position: absolute; inset: -6px; border-radius: 50%;
+  border: 2px solid #e03131; animation: ring 1.6s ease-out infinite;
+}
+@keyframes ring { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pulse::before { animation: none; opacity: .7; } }
