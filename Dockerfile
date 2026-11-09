@@ -1,6 +1,6 @@
 # --- 1. build the React frontend ------------------------------------------
 # Frontend output is platform independent: build it once on the native builder.
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:26-alpine AS frontend
 WORKDIR /src/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
