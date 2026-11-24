@@ -95,6 +95,14 @@ class Settings:
     # KNMI earthquakes.
     knmi_days: float = field(default_factory=lambda: _float("KNMI_DAYS", 30.0))
 
+    # UFO sightings: CSV of geocoded reports (see app/sources/ufo.py for the layouts).
+    # Empty = the NUFORC export mirrored on GitHub (historical, 1906-2014).
+    # Turn the layer off with OL_DISABLED_SOURCES=ufo.
+    ufo_url: str = field(default_factory=lambda: _env("UFO_URL") or (
+        "https://raw.githubusercontent.com/planetsig/ufo-reports/master/csv-data/"
+        "ufo-scrubbed-geocoded-time-standardized.csv"
+    ))
+
     # Base map tiles (XYZ template). Default: PDOK BRT achtergrondkaart, the Dutch
     # government's free, keyless base map. Outside NL, point this at another provider
     # and add its host to the page's Content-Security-Policy via the same setting.

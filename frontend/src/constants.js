@@ -17,6 +17,7 @@ export const COLORS = {
   airports: "#5f3dc4",
   satellites: "#ae3ec9",
   quakes: "#795548",
+  ufo: "#82c91e",
 };
 
 // LKI bands (Luchtmeetnet): green → purple, same steps as the official legend.
@@ -60,6 +61,7 @@ export const DEFAULT_ON = new Set(["p2000", "traffic", "bridges", "busalerts", "
 // not events, and would push the actual news off the list.
 export const NOT_IN_NEARBY = new Set([
   "transit", "webcams", "weather", "air", "charging", "safety", "water", "airports",
+  "ufo", // historical reports, years old: not news
 ]);
 
 /** Aircraft only make the "nearby" list when they matter locally: emergencies,
@@ -109,5 +111,8 @@ export function fmtTime(iso) {
   const mins = Math.round((Date.now() - d) / 60000);
   if (mins >= 0 && mins < 60) return mins <= 0 ? "zojuist" : `${mins} min geleden`;
   if (mins < 0 && mins > -60) return `over ${-mins} min`;
-  return d.toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const opts = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" };
+  // Older items (e.g. historical UFO reports) need the year to make sense.
+  if (d.getFullYear() !== new Date().getFullYear()) opts.year = "numeric";
+  return d.toLocaleString("nl-NL", opts);
 }
