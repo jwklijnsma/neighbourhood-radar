@@ -56,6 +56,7 @@ Or open the hosted copy on GitHub Pages: https://jwklijnsma.github.io/neighbourh
 | `airports` – airports, airfields and heliports | OurAirports (public domain) | no | daily |
 | `satellites` | CelesTrak TLEs, SGP4 propagated locally | no | positions every 15 s |
 | `quakes` | KNMI FDSN event service (CC BY 4.0) | no | 5 min |
+| `ufo` – reported UFO sightings (historical, 1906–2014; shape, duration and the witness's own words) | NUFORC reports, geocoded CSV mirrored at [planetsig/ufo-reports](https://github.com/planetsig/ufo-reports); `OL_UFO_URL` takes your own CSV (headerless NUFORC layout, or any CSV with `latitude`/`longitude` columns) | no | daily |
 
 ### Aircraft providers
 

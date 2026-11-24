@@ -79,6 +79,8 @@ def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, text=(FX / "stations.tle").read_text())
     if "knmi" in url:
         return httpx.Response(500, text="upstream down")
+    if "ufo-reports" in url:
+        return httpx.Response(200, text=(FX / "ufo.csv").read_text())
     return httpx.Response(404)
 
 
@@ -104,6 +106,7 @@ def test_config_lists_layers(client):
     assert names == [
         "p2000", "traffic", "bridges", "roadworks", "drips", "busalerts", "transit", "trains",
         "webcams", "charging", "safety", "weather", "water", "air", "aircraft", "airports", "satellites", "quakes",
+        "ufo",
     ]
     assert all(l["configured"] for l in cfg["layers"])
 
@@ -137,6 +140,7 @@ def test_new_layers_end_to_end(client):
     assert len(_eventually(client, "drips")["features"]) == 2
     assert len(_eventually(client, "water")["features"]) == 2
     assert len(_eventually(client, "safety")["features"]) == 4
+    assert len(_eventually(client, "ufo")["features"]) == 4
 
 
 def test_unconfigured_layer_is_reported_and_skipped(client, monkeypatch):

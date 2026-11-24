@@ -216,6 +216,8 @@ def make_handler(lat: float, lon: float):
             return httpx.Response(200, text=(DATA / "stations.tle").read_text())
         if "knmi" in url:
             return httpx.Response(200, text=(DATA / "knmi.txt").read_text())
+        if "ufo-reports" in url:
+            return httpx.Response(200, text=(DATA / "ufo.csv").read_text())
         if "api.windy.com" in url:
             return httpx.Response(200, content=(DATA / "windy.json").read_bytes())
         if "buienradar" in url:

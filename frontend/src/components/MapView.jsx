@@ -190,6 +190,16 @@ function camIcon(color) {
   });
 }
 
+// Flying saucer: dome, disc and three lights.
+function ufoIcon(color) {
+  return L.divIcon({
+    className: "",
+    iconSize: [26, 20],
+    iconAnchor: [13, 10],
+    html: `<svg width="26" height="20" viewBox="0 0 26 20"><path d="M8 9a5 5 0 0 1 10 0z" fill="#fff" stroke="${color}" stroke-width="1.5"/><ellipse cx="13" cy="11" rx="12" ry="4" fill="${color}" stroke="#fff" stroke-width="1.2"/><circle cx="7" cy="11.5" r="1" fill="#fff"/><circle cx="13" cy="12.5" r="1" fill="#fff"/><circle cx="19" cy="11.5" r="1" fill="#fff"/><path d="M10 15l-2 4M16 15l2 4" stroke="${color}" stroke-width="1" opacity=".6"/></svg>`,
+  });
+}
+
 function badgeIcon(label, color, width = 38) {
   return L.divIcon({
     className: "",
@@ -224,6 +234,7 @@ function iconFor(p, color) {
   if (p.source === "water" && p.level_cm != null) return waterIcon(p.level_cm, color);
   if (p.source === "safety") return badgeIcon(SAFETY_GLYPH[p.category] || "+", color, 22);
   if (p.source === "drips") return badgeIcon("▤", color, 22);
+  if (p.source === "ufo") return ufoIcon(color);
   return null;
 }
 

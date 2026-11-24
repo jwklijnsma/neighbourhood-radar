@@ -13,6 +13,7 @@ from app.sources.osm import SafetyPointsSource
 from app.sources.p2000 import P2000Source
 from app.sources.satellites import SatelliteSource
 from app.sources.transit_alerts import TransitAlertSource
+from app.sources.ufo import UFOSource
 from app.sources.water import WaterLevelSource
 from app.sources.weather import WeatherSource
 from app.sources.webcams import WebcamSource
@@ -37,6 +38,7 @@ ALL = [
     AirportSource,
     SatelliteSource,
     KNMIQuakeSource,
+    UFOSource,
 ]
 
 
