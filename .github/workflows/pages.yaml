@@ -1,0 +1,121 @@
+name: pages
+
+# Hosts Neighbourhood Radar on GitHub Pages: https://<owner>.github.io/<repo>/
+#
+# Pages only serves static files, so there is no backend there. Instead this
+# runs the data sources once, writes the API answers to JSON files
+# (scripts/export_static.py) and builds the frontend to read those files.
+#
+# What the site shows is set by the repository variable PAGES_MODE
+# (Settings -> Secrets and variables -> Actions -> Variables):
+#   demo (default)  built-in sample data, no real 112 messages
+#   live            a real snapshot of the live feeds, refreshed on the schedule
+#                   below (every 15 min; GitHub may run it later than that).
+#                   Optional secrets OL_NS_API_KEY / OL_WINDY_API_KEY turn on
+#                   the trains and webcams layers.
+#
+# One-time setup: Settings -> Pages -> Source: "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "deploy/**"
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Override PAGES_MODE for this run
+        type: choice
+        options: [default, demo, live]
+        default: default
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MODE: ${{ (inputs.mode && inputs.mode != 'default') && inputs.mode || vars.PAGES_MODE || 'demo' }}
+    steps:
+      - name: Skip scheduled runs unless the site is live
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = schedule ] && [ "$MODE" != live ]; then
+            echo "PAGES_MODE is '$MODE', nothing to refresh"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Building the Pages site in '$MODE' mode"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.gate.outputs.run == 'true'
+
+      - uses: actions/setup-node@v7
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: "26"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend for Pages
+        if: steps.gate.outputs.run == 'true'
+        working-directory: frontend
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_STATIC_API: "1"
+        run: npm ci && npm run build
+
+      - uses: actions/setup-python@v7
+        if: steps.gate.outputs.run == 'true'
+        with:
+          python-version: "3.15"
+          cache: pip
+
+      - name: Export data snapshot
+        if: steps.gate.outputs.run == 'true'
+        env:
+          OL_DEMO: ${{ env.MODE == 'demo' && '1' || '' }}
+          OL_NS_API_KEY: ${{ secrets.OL_NS_API_KEY }}
+          OL_WINDY_API_KEY: ${{ secrets.OL_WINDY_API_KEY }}
+          OL_USER_AGENT: neighbourhood-radar-pages (+https://github.com/${{ github.repository }})
+        run: |
+          pip install -r requirements.txt
+          rm -rf _site && cp -r app/static _site
+          python scripts/export_static.py _site
+          touch _site/.nojekyll
+          cp _site/index.html _site/404.html
+
+      - uses: actions/configure-pages@v6
+        if: steps.gate.outputs.run == 'true'
+
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.gate.outputs.run == 'true'
+        with:
+          path: _site
+
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { STATIC_API, filterFeatures, layerUrl } from "./api.js";
 
 /**
  * Polls one layer from the backend while it's enabled.
@@ -18,19 +19,19 @@ export function useLayer(name, { enabled, lat, lon, radius, refreshSeconds }) {
       controller?.abort();
       controller = new AbortController();
       setState((s) => ({ ...s, loading: true }));
-      const q = new URLSearchParams({ lat, lon, radius_km: radius });
       try {
-        const r = await fetch(`/api/layers/${encodeURIComponent(name)}?${q}`, { signal: controller.signal });
+        const r = await fetch(layerUrl(name, { lat, lon, radius }), { signal: controller.signal });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const data = await r.json();
-        setState({ features: data.features, error: data.status?.last_error || null, loading: false });
+        const features = STATIC_API ? filterFeatures(data.features, { lat, lon, radius }) : data.features;
+        setState({ features, error: data.status?.last_error || null, loading: false });
       } catch (e) {
         if (e.name === "AbortError") return;
         setState((s) => ({ ...s, error: String(e), loading: false }));
       }
     };
     load();
-    const timer = setInterval(load, Math.max(10, refreshSeconds) * 1000);
+    const timer = setInterval(load, Math.max(STATIC_API ? 60 : 10, refreshSeconds) * 1000);
     return () => {
       clearInterval(timer);
       controller?.abort();

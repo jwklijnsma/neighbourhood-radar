@@ -31,6 +31,9 @@ docker run --rm -p 8080:8080 -e OL_DEMO=1 ghcr.io/jwklijnsma/neighbourhood-radar
 `OL_DEMO=1` answers every upstream request from built-in sample data, so it
 works offline and needs no keys. The page shows a yellow "Demo" banner.
 
+Or open the hosted copy on GitHub Pages: https://jwklijnsma.github.io/neighbourhood-radar/
+(see [GitHub Pages](#github-pages) below).
+
 ## Layers
 
 | Layer | Source | Key needed | Refresh |
@@ -214,6 +217,31 @@ workflow) and pick patch, minor or major.
 New GHCR packages start private. Make `neighbourhood-radar` and
 `charts/neighbourhood-radar` public in the package settings, or give the
 cluster a pull secret.
+
+### GitHub Pages
+
+**`pages.yaml`** publishes the map to https://jwklijnsma.github.io/neighbourhood-radar/.
+Pages only serves static files, so there is no backend there: the workflow runs
+every source once with `scripts/export_static.py`, writes the answers to
+`api/config.json` and `api/layers/<name>.json`, and builds the frontend with
+`VITE_STATIC_API=1` so it reads those files and filters by distance in the
+browser. The sidebar shows when the snapshot was taken.
+
+One-time setup: **Settings → Pages → Source: GitHub Actions**.
+
+The repository variable `PAGES_MODE` picks what the site shows:
+
+| `PAGES_MODE` | Site shows | Updates |
+|---|---|---|
+| `demo` (default) | built-in sample data, no real 112 messages | on every push to `main` |
+| `live` | a snapshot of the real feeds | on every push, and every 15 minutes (GitHub's schedule can lag) |
+
+In `live` mode the secrets `OL_NS_API_KEY` and `OL_WINDY_API_KEY` turn on the
+trains and webcams layers; without them those layers show "Niet geconfigureerd".
+The air-quality layer's first crawl takes about 6 minutes, longer than the
+snapshot waits (`OL_EXPORT_TIMEOUT`, 90 s), so it stays empty on Pages in live mode.
+Run the workflow by hand (Actions → pages → Run workflow) to rebuild now or to
+try the other mode once.
 
 ## Caveats
 
