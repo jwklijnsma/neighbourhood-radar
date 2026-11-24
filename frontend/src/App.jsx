@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DEFAULT_ON, NOT_IN_NEARBY, inNearby } from "./constants.js";
+import { configUrl } from "./api.js";
 import { loadPrefs, savePrefs } from "./prefs.js";
 import { useLayer } from "./useLayer.js";
 import Sidebar from "./components/Sidebar.jsx";
@@ -10,7 +11,7 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("/api/config")
+    fetch(configUrl())
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then(setCfg)
       .catch((e) => setError(String(e)));
@@ -106,6 +107,7 @@ function Live({ cfg }) {
         onSelect={setSelected}
         attribution={attribution}
         demo={!!cfg.demo}
+        snapshotAt={cfg.static?.generated_at}
       />
       <MapView
         point={point}

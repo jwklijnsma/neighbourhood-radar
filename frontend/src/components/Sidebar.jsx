@@ -3,7 +3,7 @@ import { colorFor, featureColor, fmtTime } from "../constants.js";
 
 export default function Sidebar({
   point, radius, maxRadius, onRadius, onLocate,
-  layers, enabled, data, onToggle, nearby, onSelect, attribution, demo,
+  layers, enabled, data, onToggle, nearby, onSelect, attribution, demo, snapshotAt,
 }) {
   return (
     <aside className="panel">
@@ -13,6 +13,11 @@ export default function Sidebar({
         {demo && (
           <p className="demo-banner" role="status">
             Demo: voorbeeldgegevens, geen echte meldingen.
+          </p>
+        )}
+        {snapshotAt && (
+          <p className="muted sub" role="status">
+            Momentopname van {new Date(snapshotAt).toLocaleString("nl-NL", { dateStyle: "short", timeStyle: "short" })}
           </p>
         )}
       </header>
