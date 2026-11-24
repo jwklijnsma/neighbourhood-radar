@@ -63,7 +63,7 @@ def _iso(raw: str) -> str | None:
         try:
             # Reports give the witness's local clock time, no zone: keep it naive
             # so the browser shows it as-is.
-            return datetime.strptime(raw, fmt).isoformat()  # noqa: DTZ007
+            return datetime.strptime(raw, fmt).isoformat()
         except ValueError:
             continue
     return None
