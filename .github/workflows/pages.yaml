@@ -94,6 +94,10 @@ jobs:
           python scripts/export_static.py _site
           touch _site/.nojekyll
           cp _site/index.html _site/404.html
+          # the docs site (Zensical) lives under /docs/
+          pip install -q -r requirements-docs.txt
+          zensical build --clean
+          rm -rf _site/docs && cp -r site _site/docs
 
       - uses: actions/configure-pages@v6
         if: steps.gate.outputs.run == 'true'
